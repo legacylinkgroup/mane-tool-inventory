@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Box Contents - Tool Inventory</title>
+    <title>Container Contents - Tool Inventory</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="/css/styles.css">
@@ -19,7 +19,7 @@
             async init() {
                 const boxId = window.location.pathname.split('/').pop();
                 if (!boxId) {
-                    this.error = 'Invalid box ID';
+                    this.error = 'Invalid container ID';
                     this.loading = false;
                     return;
                 }
@@ -32,11 +32,11 @@
                         this.box = data.data.box;
                         this.items = data.data.items;
                     } else {
-                        this.error = data.detail || 'Box not found';
+                        this.error = data.detail || 'Container not found';
                     }
                 } catch (error) {
-                    console.error('Error loading box:', error);
-                    this.error = 'Failed to load box details';
+                    console.error('Error loading container:', error);
+                    this.error = 'Failed to load container details';
                 } finally {
                     this.loading = false;
                 }
@@ -48,13 +48,12 @@
         <!-- Loading State -->
         <div x-show="loading" class="text-center py-12">
             <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            <p class="mt-4 text-gray-600">Loading box contents...</p>
+            <p class="mt-4 text-gray-600">Loading container contents...</p>
         </div>
 
         <!-- Error State -->
         <div x-show="!loading && error" class="text-center py-12">
-            <div class="text-red-500 text-6xl mb-4">❌</div>
-            <h2 class="text-2xl font-bold text-gray-900 mb-2">Box Not Found</h2>
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">Container Not Found</h2>
             <p class="text-gray-600 mb-6" x-text="error"></p>
             <a href="/" class="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                 Return to Inventory
@@ -67,18 +66,17 @@
             <header class="mb-8">
                 <div class="flex items-start justify-between">
                     <div>
+                        <p class="text-sm font-medium text-blue-600 uppercase tracking-wider mb-1">Container</p>
                         <h1 class="text-4xl font-bold text-gray-900 mb-2" x-text="box?.name"></h1>
-                        <p class="text-gray-600">
-                            <span class="inline-block mr-4">
-                                📍 Location: <span class="font-semibold" x-text="box?.location"></span>
-                            </span>
-                            <span x-show="box?.sublocation" class="inline-block">
-                                <span x-text="box?.sublocation"></span>
+                        <p class="text-lg text-gray-600">
+                            Location: <span class="font-semibold" x-text="box?.location"></span>
+                            <span x-show="box?.sublocation" class="text-gray-500">
+                                &mdash; <span x-text="box?.sublocation"></span>
                             </span>
                         </p>
                     </div>
                     <a href="/" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
-                        ← Back
+                        Back
                     </a>
                 </div>
             </header>
@@ -87,17 +85,17 @@
             <div class="mb-4">
                 <p class="text-lg text-gray-700">
                     <span class="font-semibold" x-text="items.length"></span>
-                    <span x-text="items.length === 1 ? 'item' : 'items'"></span> in this box
+                    <span x-text="items.length === 1 ? 'item' : 'items'"></span> in this container
                 </p>
             </div>
 
             <!-- Empty State -->
             <div x-show="items.length === 0" class="bg-white rounded-lg shadow-md p-12 text-center">
                 <div class="text-gray-400 text-6xl mb-4">📦</div>
-                <h3 class="text-xl font-semibold text-gray-900 mb-2">This box is empty</h3>
-                <p class="text-gray-600 mb-6">No items have been added to this box yet.</p>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">This container is empty</h3>
+                <p class="text-gray-600 mb-6">No items have been added to this container yet.</p>
                 <a href="/item-form.html" class="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                    Add Item to This Box
+                    Add Item to This Container
                 </a>
             </div>
 
@@ -122,7 +120,7 @@
 
                             <!-- Brand/Platform -->
                             <p x-show="item.brand_platform" class="text-sm text-gray-500 mb-2">
-                                🏷️ <span x-text="item.brand_platform"></span>
+                                <span x-text="item.brand_platform"></span>
                             </p>
 
                             <!-- Serial Number -->
@@ -138,7 +136,7 @@
                                 >
                                     Qty: <span x-text="item.quantity"></span>
                                 </span>
-                                <span x-show="item.low_stock" class="text-xs text-yellow-600">⚠️ Low Stock</span>
+                                <span x-show="item.low_stock" class="text-xs text-yellow-600">Low Stock</span>
                             </div>
 
                             <!-- Manual Link -->
@@ -148,7 +146,7 @@
                                 target="_blank"
                                 class="inline-block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
                             >
-                                📄 View Manual
+                                View Manual
                             </a>
 
                             <!-- Last Updated -->

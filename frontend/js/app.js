@@ -5,10 +5,12 @@ function inventoryApp() {
         items: [],
         filters: {
             locations: [],
+            containers: [],
             categories: []
         },
         search: '',
         location: '',
+        container: '',
         category: '',
         total: 0,
         loading: true,
@@ -39,6 +41,7 @@ function inventoryApp() {
                 const params = new URLSearchParams();
                 if (this.search) params.append('search', this.search);
                 if (this.location) params.append('location', this.location);
+                if (this.container) params.append('container', this.container);
                 if (this.category) params.append('category', this.category);
                 params.append('limit', '100');
 
@@ -61,6 +64,7 @@ function inventoryApp() {
         clearFilters() {
             this.search = '';
             this.location = '';
+            this.container = '';
             this.category = '';
             this.loadItems();
         }
@@ -94,24 +98,23 @@ function adminApp() {
                 if (data.success || response.ok) {
                     this.uploadResult = {
                         success: true,
-                        message: `✅ Upload complete! ${data.summary.items_created} items created, ${data.summary.items_updated} items updated, ${data.summary.boxes_created} new boxes.`,
+                        message: `Upload complete! ${data.summary.items_created} items created, ${data.summary.items_updated} items updated, ${data.summary.boxes_created} new containers.`,
                         details: data.summary
                     };
                 } else {
                     this.uploadResult = {
                         success: false,
-                        message: '❌ Upload failed: ' + (data.detail || 'Unknown error')
+                        message: 'Upload failed: ' + (data.detail || 'Unknown error')
                     };
                 }
             } catch (error) {
                 console.error('Upload error:', error);
                 this.uploadResult = {
                     success: false,
-                    message: '❌ Upload failed: ' + error.message
+                    message: 'Upload failed: ' + error.message
                 };
             } finally {
                 this.uploading = false;
-                // Reset file input
                 event.target.value = '';
             }
         },
@@ -141,14 +144,16 @@ function itemFormApp() {
             name: '',
             category: '',
             quantity: 0,
-            box_location: '',
+            container_name: '',
+            location: '',
             brand_platform: '',
             serial_number: '',
             estimated_value: '',
             dropbox_manual_url: '',
             low_stock_threshold: 5
         },
-        boxes: [],
+        containers: [],
+        locations: [],
         categories: [],
         imageFile: null,
         imagePreview: null,
@@ -158,7 +163,6 @@ function itemFormApp() {
         itemId: null,
 
         async init() {
-            // Check if editing existing item
             const params = new URLSearchParams(window.location.search);
             this.itemId = params.get('id');
 
@@ -181,7 +185,8 @@ function itemFormApp() {
                         name: item.name,
                         category: item.category,
                         quantity: item.quantity,
-                        box_location: item.boxes.name,
+                        container_name: item.boxes?.name || '',
+                        location: item.boxes?.location || '',
                         brand_platform: item.brand_platform || '',
                         serial_number: item.serial_number || '',
                         estimated_value: item.estimated_value || '',
@@ -200,8 +205,9 @@ function itemFormApp() {
                 const response = await fetch('/api/filters');
                 const data = await response.json();
                 if (data.success) {
-                    this.boxes = data.data.locations;
-                    this.categories = data.data.categories;
+                    this.containers = data.data.containers || [];
+                    this.locations = data.data.locations || [];
+                    this.categories = data.data.categories || [];
                 }
             } catch (error) {
                 console.error('Failed to load filters:', error);
@@ -214,7 +220,6 @@ function itemFormApp() {
 
             this.imageFile = file;
 
-            // Show preview
             const reader = new FileReader();
             reader.onload = (e) => {
                 this.imagePreview = e.target.result;
@@ -245,16 +250,14 @@ function itemFormApp() {
         },
 
         async saveItem() {
-            // Validate required fields
-            if (!this.item.name || !this.item.category || this.item.quantity < 0 || !this.item.box_location) {
-                alert('Please fill in all required fields (Name, Category, Quantity, Box/Location)');
+            if (!this.item.name || !this.item.category || this.item.quantity < 0 || !this.item.container_name || !this.item.location) {
+                alert('Please fill in all required fields (Name, Category, Quantity, Container Name, Location)');
                 return;
             }
 
             this.saving = true;
 
             try {
-                // Create or update item
                 const endpoint = this.isEditMode ? `/api/item/${this.itemId}` : '/api/item';
                 const method = this.isEditMode ? 'PUT' : 'POST';
 
@@ -269,12 +272,10 @@ function itemFormApp() {
                 const data = await response.json();
 
                 if (data.success) {
-                    // If new item was created, get the ID for image upload
                     if (!this.isEditMode) {
                         this.itemId = data.data.id;
                     }
 
-                    // Upload image if selected
                     if (this.imageFile && this.itemId) {
                         await this.uploadImage();
                     }

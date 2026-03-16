@@ -15,7 +15,7 @@ async def export_inventory(db: Client = Depends(get_supabase_client)):
     """
     Export entire inventory database to CSV.
 
-    Returns CSV file with all fields including image URLs.
+    Returns CSV file with separate Container Name and Location columns.
     """
     try:
         # Fetch all items with box information
@@ -30,12 +30,13 @@ async def export_inventory(db: Client = Depends(get_supabase_client)):
         output = io.StringIO()
         writer = csv.writer(output)
 
-        # Header row
+        # Header row — new format with separate Container Name and Location
         writer.writerow([
             'Item Name',
             'Category',
             'Quantity',
-            'Box/Location',
+            'Container Name',
+            'Location',
             'Brand/Platform',
             'Serial Number',
             'Estimated Value',
@@ -47,13 +48,13 @@ async def export_inventory(db: Client = Depends(get_supabase_client)):
         # Data rows
         for item in items:
             box_info = item.get('boxes', {})
-            box_location = f"{box_info.get('name', 'Unknown')} - {box_info.get('location', 'Unknown')}"
 
             writer.writerow([
                 item.get('name', ''),
                 item.get('category', ''),
                 item.get('quantity', 0),
-                box_location,
+                box_info.get('name', ''),
+                box_info.get('location', ''),
                 item.get('brand_platform', ''),
                 item.get('serial_number', ''),
                 item.get('estimated_value', ''),

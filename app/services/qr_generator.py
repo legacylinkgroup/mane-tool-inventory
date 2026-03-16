@@ -130,13 +130,15 @@ class QRCodeGenerator:
                 # Draw placeholder rectangle
                 pdf.rect(x, y - qr_size, qr_size, qr_size)
 
-            # Draw box name (bold)
+            # Draw container name (bold)
             pdf.setFont("Helvetica-Bold", 14)
-            pdf.drawString(x, y - qr_size - 0.25 * inch, box['name'][:30])
+            label = f"Container: {box['name'][:25]}"
+            pdf.drawString(x, y - qr_size - 0.25 * inch, label)
 
             # Draw location (regular)
             pdf.setFont("Helvetica", 12)
-            pdf.drawString(x, y - qr_size - 0.5 * inch, box['location'][:30])
+            loc_label = f"Loc: {box['location'][:28]}"
+            pdf.drawString(x, y - qr_size - 0.5 * inch, loc_label)
 
             # Move to next position
             current_col += 1

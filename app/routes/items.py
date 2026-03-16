@@ -1,18 +1,37 @@
 from fastapi import APIRouter, Depends, Query, HTTPException, Path
+from pydantic import BaseModel, Field
 from supabase import Client
 from app.services.db import get_supabase_client
-from app.models.item import Item, ItemCreate, ItemUpdate
+from app.models.item import ItemUpdate
 from app.utils.helpers import serialize_for_supabase
-from typing import List, Optional
+from typing import Optional
+from decimal import Decimal
 import logging
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
+
+class ItemCreateRequest(BaseModel):
+    """Request model for creating items via the UI form (uses container_name + location)."""
+    name: str = Field(..., min_length=1, max_length=255)
+    category: str = Field(..., min_length=1, max_length=100)
+    quantity: int = Field(..., ge=0)
+    container_name: str = Field(..., min_length=1, max_length=255)
+    location: str = Field(..., min_length=1, max_length=100)
+    dropbox_manual_url: Optional[str] = None
+    image_url: Optional[str] = None
+    brand_platform: Optional[str] = Field(None, max_length=100)
+    serial_number: Optional[str] = Field(None, max_length=100)
+    estimated_value: Optional[Decimal] = Field(None, ge=0)
+    low_stock_threshold: int = Field(default=5, ge=0)
+
+
 @router.get("/items", summary="Search and filter items")
 async def get_items(
     search: Optional[str] = Query(None, description="Search by item name"),
     location: Optional[str] = Query(None, description="Filter by box location"),
+    container: Optional[str] = Query(None, description="Filter by container name"),
     category: Optional[str] = Query(None, description="Filter by category"),
     limit: int = Query(50, ge=1, le=100, description="Items per page"),
     offset: int = Query(0, ge=0, description="Pagination offset"),
@@ -23,46 +42,33 @@ async def get_items(
 
     - **search**: Text search on item name (case-insensitive)
     - **location**: Filter by box location
+    - **container**: Filter by container name (box name)
     - **category**: Filter by category
-    - **limit**: Results per page (default 50, max 100)
-    - **offset**: Pagination offset (default 0)
     """
     try:
-        # Start with base query including box info
         query = db.table('items').select('*, boxes(id, name, location)')
 
-        # Apply search filter
         if search:
             query = query.ilike('name', f'%{search}%')
-
-        # Apply category filter
         if category:
             query = query.eq('category', category)
-
-        # Apply location filter using foreign table syntax
         if location:
             query = query.eq('boxes.location', location)
-
-        # Get total count first (before pagination)
-        count_query = db.table('items').select('id', count='exact')
-        if search:
-            count_query = count_query.ilike('name', f'%{search}%')
-        if category:
-            count_query = count_query.eq('category', category)
-        if location:
-            count_query = count_query.eq('boxes.location', location)
-
-        count_result = count_query.execute()
-        total = count_result.count if hasattr(count_result, 'count') else len(count_result.data or [])
+        if container:
+            query = query.eq('boxes.name', container)
 
         # Apply pagination
         query = query.range(offset, offset + limit - 1)
-
-        # Execute query
         result = query.execute()
         items = result.data if result.data else []
 
-        # Calculate low_stock flag for each item
+        # PostgREST returns rows with boxes=null when foreign filter doesn't match
+        # Filter those out server-side
+        if location or container:
+            items = [item for item in items if item.get('boxes') is not None]
+
+        total = len(items)
+
         for item in items:
             item['low_stock'] = item['quantity'] < item.get('low_stock_threshold', 5)
 
@@ -82,33 +88,35 @@ async def get_items(
 @router.get("/filters", summary="Get dynamic filter options")
 async def get_filters(db: Client = Depends(get_supabase_client)):
     """
-    Get unique locations and categories for filter dropdowns.
-
-    Returns:
-        - locations: List of unique box locations
-        - categories: List of unique item categories
+    Get unique locations, containers, and categories for filter dropdowns.
     """
     try:
         # Get unique locations from boxes table
         locations_result = db.table('boxes').select('location').execute()
-        locations = list(set([
+        locations = sorted(set(
             box['location'] for box in (locations_result.data or [])
             if box.get('location')
-        ]))
-        locations.sort()
+        ))
+
+        # Get unique container names from boxes table
+        containers_result = db.table('boxes').select('name').execute()
+        containers = sorted(set(
+            box['name'] for box in (containers_result.data or [])
+            if box.get('name')
+        ))
 
         # Get unique categories from items table
         categories_result = db.table('items').select('category').execute()
-        categories = list(set([
+        categories = sorted(set(
             item['category'] for item in (categories_result.data or [])
             if item.get('category')
-        ]))
-        categories.sort()
+        ))
 
         return {
             "success": True,
             "data": {
                 "locations": locations,
+                "containers": containers,
                 "categories": categories
             }
         }
@@ -120,24 +128,32 @@ async def get_filters(db: Client = Depends(get_supabase_client)):
 
 @router.post("/item", status_code=201, summary="Create new item")
 async def create_item(
-    item: ItemCreate,
+    item: ItemCreateRequest,
     db: Client = Depends(get_supabase_client)
 ):
     """
     Create a new inventory item.
 
-    Validates that box_id exists before creating.
+    Accepts container_name + location, looks up or creates the box automatically.
     """
     try:
-        # Verify box exists
-        box_result = db.table('boxes').select('id').eq('id', str(item.box_id)).execute()
-        if not box_result.data:
-            raise HTTPException(status_code=404, detail=f"Box with id {item.box_id} not found")
+        # Look up or create the box
+        box_id = await _get_or_create_box(db, item.container_name, item.location)
 
-        # Prepare item data with UUID serialization
-        item_data = serialize_for_supabase(item.model_dump())
+        # Prepare item data
+        item_data = {
+            'name': item.name,
+            'category': item.category,
+            'quantity': item.quantity,
+            'box_id': str(box_id),
+            'dropbox_manual_url': item.dropbox_manual_url,
+            'image_url': item.image_url,
+            'brand_platform': item.brand_platform,
+            'serial_number': item.serial_number,
+            'estimated_value': float(item.estimated_value) if item.estimated_value else None,
+            'low_stock_threshold': item.low_stock_threshold,
+        }
 
-        # Create item
         result = db.table('items').insert(item_data).execute()
 
         if not result.data:
@@ -163,25 +179,19 @@ async def update_item(
 ):
     """
     Update an existing item (partial updates allowed).
-
-    Only provided fields will be updated.
     """
     try:
-        # Check item exists
         existing = db.table('items').select('id').eq('id', item_id).execute()
         if not existing.data:
             raise HTTPException(status_code=404, detail="Item not found")
 
-        # Prepare update data (exclude None values)
         update_data = item.model_dump(exclude_unset=True, exclude_none=True)
 
         if not update_data:
             raise HTTPException(status_code=400, detail="No fields to update")
 
-        # Serialize UUIDs if present
         update_data = serialize_for_supabase(update_data)
 
-        # Update item
         result = db.table('items').update(update_data).eq('id', item_id).execute()
 
         return {
@@ -194,3 +204,16 @@ async def update_item(
     except Exception as e:
         logger.error(f"Error updating item {item_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Error updating item: {str(e)}")
+
+
+async def _get_or_create_box(db: Client, container_name: str, location: str) -> str:
+    """Look up a box by container name, or create it with the given location."""
+    response = db.table('boxes').select('id').eq('name', container_name).execute()
+
+    if response.data and len(response.data) > 0:
+        return response.data[0]['id']
+
+    # Create new box
+    new_box = {'name': container_name, 'location': location}
+    result = db.table('boxes').insert(new_box).execute()
+    return result.data[0]['id']
