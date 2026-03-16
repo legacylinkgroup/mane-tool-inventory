@@ -4,7 +4,50 @@ function toggleDarkMode() {
     localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
 }
 
-// Main Inventory App (Alpine.js)
+// Sidebar Layout (shared across all pages with sidebar)
+function sidebarLayout() {
+    return {
+        sidebarOpen: false,
+        currentPath: window.location.pathname,
+        isActive(path) {
+            if (path === '/') return this.currentPath === '/';
+            return this.currentPath.startsWith(path);
+        }
+    };
+}
+
+// Dashboard App
+function dashboardApp() {
+    return {
+        stats: {
+            total_items: 0,
+            total_containers: 0,
+            total_quantity: 0,
+            total_value: 0
+        },
+        recentItems: [],
+        lowStockItems: [],
+        loading: true,
+
+        async init() {
+            try {
+                const response = await fetch('/api/dashboard');
+                const data = await response.json();
+                if (data.success) {
+                    this.stats = data.data;
+                    this.recentItems = data.data.recent_items || [];
+                    this.lowStockItems = data.data.low_stock_items || [];
+                }
+            } catch (error) {
+                console.error('Failed to load dashboard:', error);
+            } finally {
+                this.loading = false;
+            }
+        }
+    };
+}
+
+// Inventory App (Alpine.js)
 function inventoryApp() {
     return {
         // State
@@ -77,7 +120,7 @@ function inventoryApp() {
     };
 }
 
-// Admin Dashboard App
+// Admin App
 function adminApp() {
     return {
         uploading: false,
@@ -291,7 +334,7 @@ function itemFormApp() {
                     }
 
                     alert(this.isEditMode ? 'Item updated successfully!' : 'Item created successfully!');
-                    window.location.href = '/';
+                    window.location.href = '/inventory.html';
                 } else {
                     alert('Failed to save item: ' + (data.detail || 'Unknown error'));
                 }

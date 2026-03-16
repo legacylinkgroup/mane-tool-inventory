@@ -29,6 +29,7 @@
             border: 'var(--border)',
             input: 'var(--input)',
             ring: 'var(--ring)',
+            sidebar: { DEFAULT: 'var(--sidebar)', foreground: 'var(--sidebar-foreground)', border: 'var(--sidebar-border)', primary: 'var(--sidebar-primary)', accent: 'var(--sidebar-accent)' },
           },
           fontFamily: {
             sans: ['var(--font-sans)'],
@@ -42,250 +43,293 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body class="bg-background text-foreground min-h-screen font-sans">
-    <!-- Dark Mode Toggle (fixed top-right) -->
-    <button onclick="toggleDarkMode()" class="fixed top-4 right-4 z-50 p-2 bg-card text-card-foreground border border-border rounded-lg hover:bg-muted" aria-label="Toggle dark mode">
-        <svg class="dark:hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        <svg class="hidden dark:block" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-    </button>
+    <div x-data="{ ...sidebarLayout(), ...itemFormApp() }" x-init="init()" class="min-h-screen flex">
 
-    <div x-data="itemFormApp()" x-init="init()" class="container mx-auto px-4 py-8 max-w-2xl">
-        <!-- Header -->
-        <header class="mb-8">
-            <h1 class="text-4xl font-bold text-foreground mb-2" x-text="isEditMode ? 'Edit Item' : 'Add New Item'"></h1>
-            <p class="text-muted-foreground">Fill in the details below</p>
-        </header>
+        <!-- Mobile Overlay -->
+        <div x-show="sidebarOpen" x-transition.opacity class="fixed inset-0 bg-black/50 z-40 lg:hidden" @click="sidebarOpen = false"></div>
 
-        <!-- Form -->
-        <form @submit.prevent="saveItem()" class="bg-card text-card-foreground p-6 rounded-lg shadow-md space-y-6">
-            <!-- Required Fields Header -->
-            <div class="border-b border-border pb-4">
-                <h2 class="text-xl font-semibold text-foreground">Required Information</h2>
+        <!-- Sidebar -->
+        <aside
+            :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+            class="fixed lg:static lg:translate-x-0 z-50 w-64 h-screen bg-sidebar border-r border-sidebar-border flex flex-col sidebar-transition overflow-y-auto shrink-0"
+        >
+            <!-- Logo -->
+            <div class="p-5 border-b border-sidebar-border">
+                <h2 class="text-xl font-bold text-sidebar-foreground tracking-tight">Tool Inventory</h2>
+                <p class="text-xs text-muted-foreground mt-1">Inventory Management</p>
             </div>
 
-            <!-- Item Name -->
-            <div>
-                <label class="block text-sm font-medium text-foreground mb-2">
-                    Item Name <span class="text-destructive">*</span>
-                </label>
-                <input
-                    type="text"
-                    x-model="item.name"
-                    required
-                    placeholder="e.g., Wire Stripper - 8in"
-                    class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
-                >
-            </div>
+            <!-- Nav Links -->
+            <nav class="flex-1 p-3 space-y-1">
+                <a href="/"
+                   :class="isActive('/') ? 'bg-primary text-primary-foreground' : 'text-sidebar-foreground hover:bg-muted'"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                    Dashboard
+                </a>
+                <a href="/inventory.html"
+                   :class="isActive('/inventory') ? 'bg-primary text-primary-foreground' : 'text-sidebar-foreground hover:bg-muted'"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                    Inventory
+                </a>
+                <a href="/item-form.html"
+                   :class="isActive('/item-form') ? 'bg-primary text-primary-foreground' : 'text-sidebar-foreground hover:bg-muted'"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add Item
+                </a>
+                <a href="/admin.html"
+                   :class="isActive('/admin') ? 'bg-primary text-primary-foreground' : 'text-sidebar-foreground hover:bg-muted'"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    Admin
+                </a>
+            </nav>
 
-            <!-- Category -->
-            <div>
-                <label class="block text-sm font-medium text-foreground mb-2">
-                    Category <span class="text-destructive">*</span>
-                </label>
-                <input
-                    type="text"
-                    x-model="item.category"
-                    list="categories"
-                    required
-                    placeholder="e.g., Electrical, Power Tools, Carpentry"
-                    class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
-                >
-                <datalist id="categories">
-                    <template x-for="cat in categories" :key="cat">
-                        <option :value="cat"></option>
-                    </template>
-                </datalist>
+            <!-- Dark Mode Toggle -->
+            <div class="p-3 border-t border-sidebar-border">
+                <button onclick="toggleDarkMode()" class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-muted transition-colors">
+                    <svg class="dark:hidden" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    <svg class="hidden dark:block" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    <span class="dark:hidden">Dark Mode</span>
+                    <span class="hidden dark:inline">Light Mode</span>
+                </button>
             </div>
+        </aside>
 
-            <!-- Quantity -->
-            <div>
-                <label class="block text-sm font-medium text-foreground mb-2">
-                    Quantity <span class="text-destructive">*</span>
-                </label>
-                <input
-                    type="number"
-                    x-model.number="item.quantity"
-                    required
-                    min="0"
-                    placeholder="0"
-                    class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
-                >
-            </div>
+        <!-- Main Content -->
+        <main class="flex-1 min-h-screen bg-background overflow-y-auto">
+            <!-- Mobile Header -->
+            <header class="lg:hidden flex items-center gap-4 p-4 border-b border-border bg-card">
+                <button @click="sidebarOpen = !sidebarOpen" class="p-2 hover:bg-muted rounded-lg" aria-label="Toggle menu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                </button>
+                <h1 class="text-lg font-bold" x-text="isEditMode ? 'Edit Item' : 'Add Item'"></h1>
+            </header>
 
-            <!-- Container Name -->
-            <div>
-                <label class="block text-sm font-medium text-foreground mb-2">
-                    Container Name <span class="text-destructive">*</span>
-                </label>
-                <input
-                    type="text"
-                    x-model="item.container_name"
-                    list="containers-list"
-                    required
-                    placeholder="e.g., Milwaukee Packout A, Drill Case, Shelf Unit 3"
-                    class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
-                >
-                <datalist id="containers-list">
-                    <template x-for="c in containers" :key="c">
-                        <option :value="c"></option>
-                    </template>
-                </datalist>
-                <p class="mt-1 text-sm text-muted-foreground">
-                    The physical container this item is stored in (QR code will be on this container)
-                </p>
-            </div>
+            <!-- Form Content -->
+            <div class="p-6 lg:p-8 max-w-2xl">
+                <!-- Page Header (Desktop) -->
+                <div class="hidden lg:block mb-8">
+                    <h1 class="text-3xl font-bold text-foreground" x-text="isEditMode ? 'Edit Item' : 'Add New Item'"></h1>
+                    <p class="text-muted-foreground mt-1">Fill in the details below</p>
+                </div>
 
-            <!-- Location -->
-            <div>
-                <label class="block text-sm font-medium text-foreground mb-2">
-                    Location <span class="text-destructive">*</span>
-                </label>
-                <input
-                    type="text"
-                    x-model="item.location"
-                    list="locations-list"
-                    required
-                    placeholder="e.g., Truck 1, Shop, Warehouse"
-                    class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
-                >
-                <datalist id="locations-list">
-                    <template x-for="loc in locations" :key="loc">
-                        <option :value="loc"></option>
-                    </template>
-                </datalist>
-                <p class="mt-1 text-sm text-muted-foreground">
-                    Where this container lives (e.g., which truck, shop area, or warehouse)
-                </p>
-            </div>
+                <!-- Form -->
+                <form @submit.prevent="saveItem()" class="bg-card text-card-foreground p-6 rounded-lg border border-border space-y-6">
+                    <!-- Required Fields Header -->
+                    <div class="border-b border-border pb-4">
+                        <h2 class="text-xl font-semibold text-foreground">Required Information</h2>
+                    </div>
 
-            <!-- Optional Fields Header -->
-            <div class="border-b border-border pb-4 pt-4">
-                <h2 class="text-xl font-semibold text-foreground">Optional Information</h2>
-            </div>
-
-            <!-- Brand/Platform -->
-            <div>
-                <label class="block text-sm font-medium text-foreground mb-2">
-                    Brand/Platform
-                </label>
-                <input
-                    type="text"
-                    x-model="item.brand_platform"
-                    placeholder="e.g., Milwaukee M18, DeWalt 20V Max"
-                    class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
-                >
-            </div>
-
-            <!-- Serial Number -->
-            <div>
-                <label class="block text-sm font-medium text-foreground mb-2">
-                    Serial Number
-                </label>
-                <input
-                    type="text"
-                    x-model="item.serial_number"
-                    placeholder="e.g., SN-12345"
-                    class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
-                >
-            </div>
-
-            <!-- Estimated Value -->
-            <div>
-                <label class="block text-sm font-medium text-foreground mb-2">
-                    Estimated Value ($)
-                </label>
-                <input
-                    type="number"
-                    x-model.number="item.estimated_value"
-                    step="0.01"
-                    min="0"
-                    placeholder="29.99"
-                    class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
-                >
-            </div>
-
-            <!-- Dropbox Manual URL -->
-            <div>
-                <label class="block text-sm font-medium text-foreground mb-2">
-                    Dropbox Manual URL
-                </label>
-                <input
-                    type="url"
-                    x-model="item.dropbox_manual_url"
-                    placeholder="https://dropbox.com/..."
-                    class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
-                >
-            </div>
-
-            <!-- Low Stock Threshold -->
-            <div>
-                <label class="block text-sm font-medium text-foreground mb-2">
-                    Low Stock Threshold
-                </label>
-                <input
-                    type="number"
-                    x-model.number="item.low_stock_threshold"
-                    min="0"
-                    placeholder="5"
-                    class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
-                >
-                <p class="mt-1 text-sm text-muted-foreground">
-                    Item will be highlighted when quantity falls below this value
-                </p>
-            </div>
-
-            <!-- Image Upload with Mobile Camera Support -->
-            <div>
-                <label class="block text-sm font-medium text-foreground mb-2">
-                    Tool Photo
-                </label>
-                <div class="flex flex-col gap-4">
-                    <!-- Image Preview -->
-                    <div x-show="imagePreview" class="w-full">
-                        <img
-                            :src="imagePreview"
-                            alt="Tool preview"
-                            class="w-full max-w-sm rounded-lg border border-border"
+                    <!-- Item Name -->
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">
+                            Item Name <span class="text-destructive">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            x-model="item.name"
+                            required
+                            placeholder="e.g., Wire Stripper - 8in"
+                            class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
                         >
                     </div>
 
-                    <!-- File Input with Camera Capture -->
-                    <input
-                        type="file"
-                        accept="image/*"
-                        capture="environment"
-                        @change="handleImageSelect($event)"
-                        class="block w-full text-sm text-muted-foreground
-                            file:mr-4 file:py-2 file:px-4
-                            file:rounded-lg file:border-0
-                            file:text-sm file:font-semibold
-                            file:bg-primary/10 file:text-primary
-                            hover:file:bg-primary/20
-                            cursor-pointer"
-                    >
-                    <p class="text-sm text-muted-foreground">
-                        On mobile: opens camera directly. On desktop: upload from files.
-                    </p>
-                </div>
-            </div>
+                    <!-- Category -->
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">
+                            Category <span class="text-destructive">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            x-model="item.category"
+                            list="categories"
+                            required
+                            placeholder="e.g., Electrical, Power Tools, Carpentry"
+                            class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
+                        >
+                        <datalist id="categories">
+                            <template x-for="cat in categories" :key="cat">
+                                <option :value="cat"></option>
+                            </template>
+                        </datalist>
+                    </div>
 
-            <!-- Form Actions -->
-            <div class="flex gap-4 pt-4">
-                <button
-                    type="submit"
-                    :disabled="saving"
-                    class="flex-1 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:opacity-90 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    <span x-show="!saving" x-text="isEditMode ? 'Update Item' : 'Create Item'"></span>
-                    <span x-show="saving">Saving...</span>
-                </button>
-                <a
-                    href="/"
-                    class="flex-1 px-6 py-3 bg-muted text-foreground text-center rounded-lg hover:opacity-80 font-semibold"
-                >
-                    Cancel
-                </a>
+                    <!-- Quantity -->
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">
+                            Quantity <span class="text-destructive">*</span>
+                        </label>
+                        <input
+                            type="number"
+                            x-model.number="item.quantity"
+                            required
+                            min="0"
+                            placeholder="0"
+                            class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
+                        >
+                    </div>
+
+                    <!-- Container Name -->
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">
+                            Container Name <span class="text-destructive">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            x-model="item.container_name"
+                            list="containers-list"
+                            required
+                            placeholder="e.g., Milwaukee Packout A, Drill Case, Shelf Unit 3"
+                            class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
+                        >
+                        <datalist id="containers-list">
+                            <template x-for="c in containers" :key="c">
+                                <option :value="c"></option>
+                            </template>
+                        </datalist>
+                        <p class="mt-1 text-sm text-muted-foreground">
+                            The physical container this item is stored in (QR code will be on this container)
+                        </p>
+                    </div>
+
+                    <!-- Location -->
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">
+                            Location <span class="text-destructive">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            x-model="item.location"
+                            list="locations-list"
+                            required
+                            placeholder="e.g., Truck 1, Shop, Warehouse"
+                            class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
+                        >
+                        <datalist id="locations-list">
+                            <template x-for="loc in locations" :key="loc">
+                                <option :value="loc"></option>
+                            </template>
+                        </datalist>
+                        <p class="mt-1 text-sm text-muted-foreground">
+                            Where this container lives (e.g., which truck, shop area, or warehouse)
+                        </p>
+                    </div>
+
+                    <!-- Optional Fields Header -->
+                    <div class="border-b border-border pb-4 pt-4">
+                        <h2 class="text-xl font-semibold text-foreground">Optional Information</h2>
+                    </div>
+
+                    <!-- Brand/Platform -->
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">Brand/Platform</label>
+                        <input
+                            type="text"
+                            x-model="item.brand_platform"
+                            placeholder="e.g., Milwaukee M18, DeWalt 20V Max"
+                            class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
+                        >
+                    </div>
+
+                    <!-- Serial Number -->
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">Serial Number</label>
+                        <input
+                            type="text"
+                            x-model="item.serial_number"
+                            placeholder="e.g., SN-12345"
+                            class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
+                        >
+                    </div>
+
+                    <!-- Estimated Value -->
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">Estimated Value ($)</label>
+                        <input
+                            type="number"
+                            x-model.number="item.estimated_value"
+                            step="0.01"
+                            min="0"
+                            placeholder="29.99"
+                            class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
+                        >
+                    </div>
+
+                    <!-- Dropbox Manual URL -->
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">Dropbox Manual URL</label>
+                        <input
+                            type="url"
+                            x-model="item.dropbox_manual_url"
+                            placeholder="https://dropbox.com/..."
+                            class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
+                        >
+                    </div>
+
+                    <!-- Low Stock Threshold -->
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">Low Stock Threshold</label>
+                        <input
+                            type="number"
+                            x-model.number="item.low_stock_threshold"
+                            min="0"
+                            placeholder="5"
+                            class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
+                        >
+                        <p class="mt-1 text-sm text-muted-foreground">
+                            Item will be highlighted when quantity falls below this value
+                        </p>
+                    </div>
+
+                    <!-- Image Upload -->
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">Tool Photo</label>
+                        <div class="flex flex-col gap-4">
+                            <div x-show="imagePreview" class="w-full">
+                                <img :src="imagePreview" alt="Tool preview" class="w-full max-w-sm rounded-lg border border-border">
+                            </div>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                capture="environment"
+                                @change="handleImageSelect($event)"
+                                class="block w-full text-sm text-muted-foreground
+                                    file:mr-4 file:py-2 file:px-4
+                                    file:rounded-lg file:border-0
+                                    file:text-sm file:font-semibold
+                                    file:bg-primary/10 file:text-primary
+                                    hover:file:bg-primary/20
+                                    cursor-pointer"
+                            >
+                            <p class="text-sm text-muted-foreground">
+                                On mobile: opens camera directly. On desktop: upload from files.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="flex gap-4 pt-4">
+                        <button
+                            type="submit"
+                            :disabled="saving"
+                            class="flex-1 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:opacity-90 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <span x-show="!saving" x-text="isEditMode ? 'Update Item' : 'Create Item'"></span>
+                            <span x-show="saving">Saving...</span>
+                        </button>
+                        <a
+                            href="/inventory.html"
+                            class="flex-1 px-6 py-3 bg-muted text-foreground text-center rounded-lg hover:opacity-80 font-semibold"
+                        >
+                            Cancel
+                        </a>
+                    </div>
+                </form>
             </div>
-        </form>
+        </main>
     </div>
 
     <script src="/js/app.js"></script>

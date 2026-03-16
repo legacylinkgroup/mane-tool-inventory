@@ -80,7 +80,7 @@ async def health():
     }
 
 # Import and include routers
-from app.routes import items, boxes, export, images, upload, qr
+from app.routes import items, boxes, export, images, upload, qr, dashboard
 
 app.include_router(items.router, prefix="/api", tags=["items"])
 app.include_router(boxes.router, prefix="/api", tags=["boxes"])
@@ -88,6 +88,7 @@ app.include_router(export.router, prefix="/api", tags=["export"])
 app.include_router(images.router, prefix="/api", tags=["images"])
 app.include_router(upload.router, prefix="/api", tags=["upload"])
 app.include_router(qr.router, prefix="/api", tags=["qr"])
+app.include_router(dashboard.router, prefix="/api", tags=["dashboard"])
 
 # Mount static files (frontend)
 frontend_path = Path(__file__).parent.parent / "frontend"
@@ -101,6 +102,10 @@ if frontend_path.exists():
     @app.get("/admin.html")
     async def admin_page():
         return FileResponse(str(frontend_path / "admin.html"))
+
+    @app.get("/inventory.html")
+    async def inventory_page():
+        return FileResponse(str(frontend_path / "inventory.html"))
 
     @app.get("/item-form.html")
     async def item_form_page():
