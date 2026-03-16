@@ -1,3 +1,9 @@
+// Dark Mode Toggle
+function toggleDarkMode() {
+    document.documentElement.classList.toggle('dark');
+    localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
+}
+
 // Main Inventory App (Alpine.js)
 function inventoryApp() {
     return {

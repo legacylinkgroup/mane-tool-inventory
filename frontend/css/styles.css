@@ -1,44 +1,152 @@
-/* Custom styles for Tool Inventory */
+/* ===== 21st.dev Custom Theme ===== */
+@import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@400;500;600;700&family=Source+Code+Pro:wght@400;500;600&display=swap');
 
-/* Smooth transitions */
+:root {
+  --card: #b0b0b0;
+  --ring: #b71c1c;
+  --input: #505050;
+  --muted: #b8b8b8;
+  --accent: #4682b4;
+  --border: #505050;
+  --radius: 0px;
+  --chart-1: #b71c1c;
+  --chart-2: #556b2f;
+  --chart-3: #4682b4;
+  --chart-4: #ff6f00;
+  --chart-5: #8d6e63;
+  --popover: #b0b0b0;
+  --primary: #b71c1c;
+  --sidebar: #b0b0b0;
+  --spacing: 0.25rem;
+  --font-mono: "Source Code Pro", monospace;
+  --font-sans: "Oxanium", sans-serif;
+  --secondary: #556b2f;
+  --background: #cccccc;
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --foreground: #1f1f1f;
+  --destructive: #ff6f00;
+  --shadow-blur: 4px;
+  --shadow-color: hsl(0 0% 0%);
+  --sidebar-ring: #b71c1c;
+  --shadow-spread: 0px;
+  --letter-spacing: 0em;
+  --shadow-opacity: 0.4;
+  --sidebar-accent: #4682b4;
+  --sidebar-border: #505050;
+  --card-foreground: #1f1f1f;
+  --shadow-offset-x: 0px;
+  --shadow-offset-y: 2px;
+  --sidebar-primary: #b71c1c;
+  --muted-foreground: #4a4a4a;
+  --accent-foreground: #ffffff;
+  --popover-foreground: #1f1f1f;
+  --primary-foreground: #ffffff;
+  --sidebar-foreground: #1f1f1f;
+  --secondary-foreground: #ffffff;
+  --destructive-foreground: #000000;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-primary-foreground: #ffffff;
+}
+
+.dark {
+  --card: #2a2a2a;
+  --ring: #e53935;
+  --input: #4a4a4a;
+  --muted: #252525;
+  --accent: #64b5f6;
+  --border: #4a4a4a;
+  --radius: 0px;
+  --chart-1: #e53935;
+  --chart-2: #689f38;
+  --chart-3: #64b5f6;
+  --chart-4: #ffa000;
+  --chart-5: #a1887f;
+  --popover: #2a2a2a;
+  --primary: #e53935;
+  --sidebar: #141414;
+  --spacing: 0.25rem;
+  --font-mono: "Source Code Pro", monospace;
+  --font-sans: "Oxanium", sans-serif;
+  --secondary: #689f38;
+  --background: #1a1a1a;
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --foreground: #e0e0e0;
+  --destructive: #ffa000;
+  --shadow-blur: 5px;
+  --shadow-color: hsl(0 0% 0%);
+  --sidebar-ring: #e53935;
+  --shadow-spread: 0px;
+  --letter-spacing: 0em;
+  --shadow-opacity: 0.6;
+  --sidebar-accent: #64b5f6;
+  --sidebar-border: #4a4a4a;
+  --card-foreground: #e0e0e0;
+  --shadow-offset-x: 0px;
+  --shadow-offset-y: 2px;
+  --sidebar-primary: #e53935;
+  --muted-foreground: #a0a0a0;
+  --accent-foreground: #000000;
+  --popover-foreground: #e0e0e0;
+  --primary-foreground: #ffffff;
+  --sidebar-foreground: #e0e0e0;
+  --secondary-foreground: #000000;
+  --destructive-foreground: #000000;
+  --sidebar-accent-foreground: #000000;
+  --sidebar-primary-foreground: #ffffff;
+}
+
+/* ===== Base Styles ===== */
+body {
+    font-family: var(--font-sans);
+    letter-spacing: var(--letter-spacing);
+}
+
+code, pre, .font-mono {
+    font-family: var(--font-mono);
+}
+
+/* Smooth transitions for theme switching */
 * {
     transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
-/* Low stock highlighting */
+/* ===== Low Stock Highlighting ===== */
 .low-stock-row {
     background-color: #fef3c7;
     border-left: 4px solid #f59e0b;
 }
+.dark .low-stock-row {
+    background-color: rgba(255, 160, 0, 0.15);
+    border-left-color: var(--destructive);
+}
 
-/* Mobile-friendly touch targets */
+/* ===== Mobile-friendly touch targets ===== */
 @media (max-width: 768px) {
     button, a, input, select {
         min-height: 44px;
     }
 }
 
-/* Image placeholder */
+/* ===== Image placeholder ===== */
 img[src*="placeholder"] {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
     display: flex;
     align-items: center;
-    justify-center;
+    justify-content: center;
     color: white;
 }
 
-/* Loading spinner */
+/* ===== Loading spinner ===== */
 @keyframes spin {
     to {
         transform: rotate(360deg);
     }
 }
-
 .animate-spin {
     animation: spin 1s linear infinite;
 }
 
-/* Print styles for QR codes */
+/* ===== Print styles ===== */
 @media print {
     body {
         print-color-adjust: exact;
@@ -46,16 +154,21 @@ img[src*="placeholder"] {
     }
 }
 
-/* File input styling */
+/* ===== File input styling ===== */
 input[type="file"]::file-selector-button {
     cursor: pointer;
 }
 
-/* Responsive table */
+/* ===== Responsive table ===== */
 @media (max-width: 768px) {
     table {
         display: block;
         overflow-x: auto;
         white-space: nowrap;
     }
+}
+
+/* ===== Custom shadow using theme variables ===== */
+.theme-shadow {
+    box-shadow: var(--shadow-offset-x) var(--shadow-offset-y) var(--shadow-blur) var(--shadow-spread) rgba(0, 0, 0, var(--shadow-opacity));
 }
