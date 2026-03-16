@@ -38,6 +38,7 @@
       }
     }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="/css/styles.css">
     <style>
@@ -78,6 +79,16 @@
                     if (response.ok && data.success) {
                         this.box = data.data.box;
                         this.items = data.data.items;
+                        this.$nextTick(() => {
+                            if (this.$refs.qrCanvas) {
+                                new QRious({
+                                    element: this.$refs.qrCanvas,
+                                    value: window.location.href,
+                                    size: 200,
+                                    backgroundAlpha: 0
+                                });
+                            }
+                        });
                     } else {
                         this.error = data.detail || 'Container not found';
                     }
@@ -130,13 +141,7 @@
                 <!-- QR Code + Print Label -->
                 <div class="mt-6 flex flex-col sm:flex-row items-center gap-6 p-6 bg-card rounded-lg border border-border">
                     <div class="flex-shrink-0">
-                        <img
-                            :src="'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(window.location.href)"
-                            alt="QR Code for this container"
-                            width="200"
-                            height="200"
-                            class="rounded-lg"
-                        >
+                        <canvas x-ref="qrCanvas" width="200" height="200" class="rounded-lg"></canvas>
                     </div>
                     <div class="text-center sm:text-left">
                         <h2 class="text-2xl font-bold text-foreground" x-text="box?.name"></h2>
