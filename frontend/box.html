@@ -40,10 +40,18 @@
     </script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        @media print {
+            body { background: white !important; color: black !important; }
+            .no-print, .no-print * { display: none !important; }
+            .print-only { display: block !important; }
+            .container { max-width: 4in; margin: 0 auto; padding: 0.5in 0; text-align: center; }
+        }
+    </style>
 </head>
 <body class="bg-background text-foreground min-h-screen font-sans">
     <!-- Dark Mode Toggle (fixed top-right) -->
-    <button onclick="toggleDarkMode()" class="fixed top-4 right-4 z-50 p-2 bg-card text-card-foreground border border-border rounded-lg hover:bg-muted" aria-label="Toggle dark mode">
+    <button onclick="toggleDarkMode()" class="no-print fixed top-4 right-4 z-50 p-2 bg-card text-card-foreground border border-border rounded-lg hover:bg-muted" aria-label="Toggle dark mode">
         <svg class="dark:hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         <svg class="hidden dark:block" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
     </button>
@@ -103,7 +111,7 @@
         <div x-show="!loading && !error">
             <!-- Header -->
             <header class="mb-8">
-                <div class="flex items-start justify-between">
+                <div class="flex items-start justify-between no-print">
                     <div>
                         <p class="text-sm font-medium text-primary uppercase tracking-wider mb-1">Container</p>
                         <h1 class="text-4xl font-bold text-foreground mb-2" x-text="box?.name"></h1>
@@ -118,10 +126,38 @@
                         Back
                     </a>
                 </div>
+
+                <!-- QR Code + Print Label -->
+                <div class="mt-6 flex flex-col sm:flex-row items-center gap-6 p-6 bg-card rounded-lg border border-border">
+                    <div class="flex-shrink-0">
+                        <img
+                            :src="'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(window.location.href)"
+                            alt="QR Code for this container"
+                            width="200"
+                            height="200"
+                            class="rounded-lg"
+                        >
+                    </div>
+                    <div class="text-center sm:text-left">
+                        <h2 class="text-2xl font-bold text-foreground" x-text="box?.name"></h2>
+                        <p class="text-muted-foreground mt-1">
+                            <span x-text="box?.location"></span>
+                            <span x-show="box?.sublocation"> &mdash; <span x-text="box?.sublocation"></span></span>
+                        </p>
+                        <p class="text-xs text-muted-foreground mt-2 no-print">Scan to view container contents</p>
+                        <button
+                            onclick="window.print()"
+                            class="no-print mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-lg hover:opacity-90 text-sm font-medium transition-colors"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                            Print Label
+                        </button>
+                    </div>
+                </div>
             </header>
 
             <!-- Items Count -->
-            <div class="mb-4">
+            <div class="mb-4 no-print">
                 <p class="text-lg text-foreground">
                     <span class="font-semibold" x-text="items.length"></span>
                     <span x-text="items.length === 1 ? 'item' : 'items'"></span> in this container
@@ -129,7 +165,7 @@
             </div>
 
             <!-- Empty State -->
-            <div x-show="items.length === 0" class="bg-card rounded-lg shadow-md p-12 text-center">
+            <div x-show="items.length === 0" class="no-print bg-card rounded-lg shadow-md p-12 text-center">
                 <div class="text-muted-foreground text-6xl mb-4">📦</div>
                 <h3 class="text-xl font-semibold text-foreground mb-2">This container is empty</h3>
                 <p class="text-muted-foreground mb-6">No items have been added to this container yet.</p>
@@ -139,7 +175,7 @@
             </div>
 
             <!-- Items Grid (Mobile-First Cards) -->
-            <div x-show="items.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div x-show="items.length > 0" class="no-print grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <template x-for="item in items" :key="item.id">
                     <div class="bg-card rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
                         <!-- Item Image -->
