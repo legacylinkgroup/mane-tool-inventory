@@ -184,6 +184,10 @@ function itemFormApp() {
             try {
                 const response = await fetch(`/api/items?limit=1000`);
                 const data = await response.json();
+                if (!data.success || !data.data) {
+                    alert('Could not load item. Please try again.');
+                    return;
+                }
                 const item = data.data.find(i => i.id === this.itemId);
 
                 if (item) {
