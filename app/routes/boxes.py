@@ -6,6 +6,35 @@ import logging
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
+@router.get("/containers", summary="List all containers with their items")
+async def get_containers(
+    db: Client = Depends(get_supabase_client)
+):
+    """
+    Get all boxes (containers) with their nested items.
+    Used by the Containers page accordion view.
+    """
+    try:
+        result = db.table('boxes').select('*, items(*)').order('name').execute()
+        boxes = result.data if result.data else []
+
+        for box in boxes:
+            items = box.get('items', [])
+            box['item_count'] = len(items)
+            for item in items:
+                item['low_stock'] = item['quantity'] < item.get('low_stock_threshold', 5)
+
+        return {
+            "success": True,
+            "total": len(boxes),
+            "data": boxes
+        }
+
+    except Exception as e:
+        logger.error(f"Error fetching containers: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching containers: {str(e)}")
+
+
 @router.get("/box/{box_id}", summary="Get box details with all items")
 async def get_box(
     box_id: str = Path(..., description="Box UUID"),

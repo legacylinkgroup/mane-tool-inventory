@@ -211,6 +211,46 @@ function itemFormApp() {
         isEditMode: false,
         itemId: null,
 
+        // Combobox state
+        comboboxState: {
+            location: { open: false, search: '' },
+            container_name: { open: false, search: '' },
+            category: { open: false, search: '' }
+        },
+
+        filteredLocations() {
+            const search = this.comboboxState.location.search.toLowerCase();
+            if (!search) return this.locations;
+            return this.locations.filter(loc => loc.toLowerCase().includes(search));
+        },
+
+        filteredContainers() {
+            const search = this.comboboxState.container_name.search.toLowerCase();
+            if (!search) return this.containers;
+            return this.containers.filter(c => c.toLowerCase().includes(search));
+        },
+
+        filteredCategories() {
+            const search = this.comboboxState.category.search.toLowerCase();
+            if (!search) return this.categories;
+            return this.categories.filter(cat => cat.toLowerCase().includes(search));
+        },
+
+        selectOption(field, value) {
+            this.item[field] = value;
+            this.comboboxState[field].search = value;
+            this.comboboxState[field].open = false;
+        },
+
+        handleComboInput(field) {
+            this.item[field] = this.comboboxState[field].search;
+            this.comboboxState[field].open = true;
+        },
+
+        openCombobox(field) {
+            this.comboboxState[field].open = true;
+        },
+
         async init() {
             const params = new URLSearchParams(window.location.search);
             this.itemId = params.get('id');
@@ -247,6 +287,11 @@ function itemFormApp() {
                         low_stock_threshold: item.low_stock_threshold || 5
                     };
                     this.imagePreview = item.image_url;
+
+                    // Sync combobox search fields
+                    this.comboboxState.location.search = this.item.location;
+                    this.comboboxState.container_name.search = this.item.container_name;
+                    this.comboboxState.category.search = this.item.category;
                 }
             } catch (error) {
                 alert('Failed to load item: ' + error.message);
@@ -304,7 +349,7 @@ function itemFormApp() {
 
         async saveItem() {
             if (!this.item.name || !this.item.category || this.item.quantity < 0 || !this.item.container_name || !this.item.location) {
-                alert('Please fill in all required fields (Name, Category, Quantity, Container Name, Location)');
+                alert('Please fill in all required fields (Name, Category, Quantity, Location, Container Name)');
                 return;
             }
 
@@ -343,6 +388,37 @@ function itemFormApp() {
             } finally {
                 this.saving = false;
             }
+        }
+    };
+}
+
+// Containers App
+function containersApp() {
+    return {
+        boxes: [],
+        loading: true,
+        openBoxes: {},
+
+        async init() {
+            try {
+                const response = await fetch('/api/containers');
+                const data = await response.json();
+                if (data.success) {
+                    this.boxes = data.data;
+                }
+            } catch (error) {
+                console.error('Failed to load containers:', error);
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        toggleBox(boxId) {
+            this.openBoxes[boxId] = !this.openBoxes[boxId];
+        },
+
+        isBoxOpen(boxId) {
+            return this.openBoxes[boxId] === true;
         }
     };
 }

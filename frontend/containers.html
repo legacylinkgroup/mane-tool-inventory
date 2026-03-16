@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Containers - Tool Inventory</title>
+    <script>
+      if (localStorage.getItem('darkMode') === 'true' ||
+          (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            background: 'var(--background)',
+            foreground: 'var(--foreground)',
+            card: { DEFAULT: 'var(--card)', foreground: 'var(--card-foreground)' },
+            popover: { DEFAULT: 'var(--popover)', foreground: 'var(--popover-foreground)' },
+            primary: { DEFAULT: 'var(--primary)', foreground: 'var(--primary-foreground)' },
+            secondary: { DEFAULT: 'var(--secondary)', foreground: 'var(--secondary-foreground)' },
+            muted: { DEFAULT: 'var(--muted)', foreground: 'var(--muted-foreground)' },
+            accent: { DEFAULT: 'var(--accent)', foreground: 'var(--accent-foreground)' },
+            destructive: { DEFAULT: 'var(--destructive)', foreground: 'var(--destructive-foreground)' },
+            border: 'var(--border)',
+            input: 'var(--input)',
+            ring: 'var(--ring)',
+            sidebar: { DEFAULT: 'var(--sidebar)', foreground: 'var(--sidebar-foreground)', border: 'var(--sidebar-border)', primary: 'var(--sidebar-primary)', accent: 'var(--sidebar-accent)' },
+          },
+          fontFamily: {
+            sans: ['var(--font-sans)'],
+            mono: ['var(--font-mono)'],
+          },
+        }
+      }
+    }
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="bg-background text-foreground min-h-screen font-sans">
+    <div x-data="{ ...sidebarLayout(), ...containersApp() }" x-init="init()" class="min-h-screen flex">
+
+        <!-- Mobile Overlay -->
+        <div x-show="sidebarOpen" x-transition.opacity class="fixed inset-0 bg-black/50 z-40 lg:hidden" @click="sidebarOpen = false"></div>
+
+        <!-- Sidebar -->
+        <aside
+            :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+            class="fixed lg:static lg:translate-x-0 z-50 w-64 h-screen bg-sidebar border-r border-sidebar-border flex flex-col sidebar-transition overflow-y-auto shrink-0"
+        >
+            <!-- Logo -->
+            <div class="p-5 border-b border-sidebar-border">
+                <h2 class="text-xl font-bold text-sidebar-foreground tracking-tight">Tool Inventory</h2>
+                <p class="text-xs text-muted-foreground mt-1">Inventory Management</p>
+            </div>
+
+            <!-- Nav Links -->
+            <nav class="flex-1 p-3 space-y-1">
+                <a href="/"
+                   :class="isActive('/') ? 'bg-primary text-primary-foreground' : 'text-sidebar-foreground hover:bg-muted'"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                    Dashboard
+                </a>
+                <a href="/inventory.html"
+                   :class="isActive('/inventory') ? 'bg-primary text-primary-foreground' : 'text-sidebar-foreground hover:bg-muted'"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                    Inventory
+                </a>
+                <a href="/containers.html"
+                   :class="isActive('/containers') ? 'bg-primary text-primary-foreground' : 'text-sidebar-foreground hover:bg-muted'"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>
+                    Containers
+                </a>
+                <a href="/item-form.html"
+                   :class="isActive('/item-form') ? 'bg-primary text-primary-foreground' : 'text-sidebar-foreground hover:bg-muted'"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add Item
+                </a>
+                <a href="/admin.html"
+                   :class="isActive('/admin') ? 'bg-primary text-primary-foreground' : 'text-sidebar-foreground hover:bg-muted'"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    Admin
+                </a>
+            </nav>
+
+            <!-- Dark Mode Toggle -->
+            <div class="p-3 border-t border-sidebar-border">
+                <button onclick="toggleDarkMode()" class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-muted transition-colors">
+                    <svg class="dark:hidden" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    <svg class="hidden dark:block" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    <span class="dark:hidden">Dark Mode</span>
+                    <span class="hidden dark:inline">Light Mode</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 min-h-screen bg-background overflow-y-auto">
+            <!-- Mobile Header -->
+            <header class="lg:hidden flex items-center gap-4 p-4 border-b border-border bg-card">
+                <button @click="sidebarOpen = !sidebarOpen" class="p-2 hover:bg-muted rounded-lg" aria-label="Toggle menu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                </button>
+                <h1 class="text-lg font-bold">Containers</h1>
+            </header>
+
+            <!-- Containers Content -->
+            <div class="p-6 lg:p-8 max-w-5xl">
+                <!-- Page Header (Desktop) -->
+                <div class="hidden lg:flex lg:items-center lg:justify-between mb-8">
+                    <div>
+                        <h1 class="text-3xl font-bold text-foreground">Containers</h1>
+                        <p class="text-muted-foreground mt-1">All containers and their contents</p>
+                    </div>
+                    <p class="text-sm text-muted-foreground" x-show="!loading">
+                        <span x-text="boxes.length" class="font-semibold text-foreground"></span> containers
+                    </p>
+                </div>
+
+                <!-- Loading -->
+                <div x-show="loading" class="text-center py-12">
+                    <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                    <p class="mt-4 text-muted-foreground">Loading containers...</p>
+                </div>
+
+                <!-- Empty state -->
+                <div x-show="!loading && boxes.length === 0" class="text-center py-12 text-muted-foreground">
+                    No containers found. <a href="/item-form.html" class="text-primary hover:underline">Add an item</a> to create one.
+                </div>
+
+                <!-- Accordion list -->
+                <div x-show="!loading && boxes.length > 0" class="space-y-3">
+                    <template x-for="box in boxes" :key="box.id">
+                        <div class="bg-card rounded-lg border border-border overflow-hidden">
+                            <!-- Accordion Header -->
+                            <button @click="toggleBox(box.id)"
+                                    class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-muted/50 transition-colors">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <div class="p-2 bg-primary/10 rounded-lg shrink-0">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                             class="text-primary">
+                                            <path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/>
+                                        </svg>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-semibold text-foreground truncate" x-text="box.name"></p>
+                                        <p class="text-xs text-muted-foreground" x-text="box.location"></p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-4 shrink-0 ml-4">
+                                    <span class="px-2.5 py-1 text-xs font-medium bg-muted text-muted-foreground rounded-full">
+                                        <span x-text="box.item_count"></span> items
+                                    </span>
+                                    <a :href="'/box/' + box.id" @click.stop
+                                       class="hidden sm:inline-flex items-center gap-1.5 text-xs text-primary hover:underline font-medium">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+                                        View QR
+                                    </a>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                         stroke-linejoin="round"
+                                         :class="isBoxOpen(box.id) ? 'rotate-180' : ''" class="transition-transform text-muted-foreground">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </div>
+                            </button>
+
+                            <!-- Accordion Body -->
+                            <div x-show="isBoxOpen(box.id)" x-collapse>
+                                <div class="border-t border-border">
+                                    <!-- Mobile QR link -->
+                                    <div class="sm:hidden px-5 py-3 border-b border-border">
+                                        <a :href="'/box/' + box.id"
+                                           class="inline-flex items-center gap-1.5 text-sm text-primary hover:underline font-medium">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+                                            View QR Code
+                                        </a>
+                                    </div>
+
+                                    <!-- No items -->
+                                    <div x-show="!box.items || box.items.length === 0" class="px-5 py-8 text-center text-sm text-muted-foreground">
+                                        No items in this container. <a href="/item-form.html" class="text-primary hover:underline">Add one</a>.
+                                    </div>
+
+                                    <!-- Items table (desktop) -->
+                                    <div x-show="box.items && box.items.length > 0" class="hidden md:block">
+                                        <table class="w-full">
+                                            <thead>
+                                                <tr class="border-b border-border bg-muted/30">
+                                                    <th class="px-5 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Name</th>
+                                                    <th class="px-5 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Category</th>
+                                                    <th class="px-5 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Qty</th>
+                                                    <th class="px-5 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Brand</th>
+                                                    <th class="px-5 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-border">
+                                                <template x-for="item in box.items" :key="item.id">
+                                                    <tr class="hover:bg-muted/30 transition-colors">
+                                                        <td class="px-5 py-2.5 text-sm font-medium text-foreground" x-text="item.name"></td>
+                                                        <td class="px-5 py-2.5 text-sm text-muted-foreground" x-text="item.category"></td>
+                                                        <td class="px-5 py-2.5">
+                                                            <span class="px-2 py-0.5 text-xs font-semibold rounded-full"
+                                                                  :class="item.low_stock ? 'bg-destructive/20 text-destructive' : 'bg-secondary/20 text-secondary'"
+                                                                  x-text="item.quantity"></span>
+                                                        </td>
+                                                        <td class="px-5 py-2.5 text-sm text-muted-foreground" x-text="item.brand_platform || '-'"></td>
+                                                        <td class="px-5 py-2.5">
+                                                            <a :href="'/item-form.html?id=' + item.id" class="text-sm text-primary hover:underline">Edit</a>
+                                                        </td>
+                                                    </tr>
+                                                </template>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <!-- Items list (mobile) -->
+                                    <div x-show="box.items && box.items.length > 0" class="md:hidden divide-y divide-border">
+                                        <template x-for="item in box.items" :key="item.id">
+                                            <a :href="'/item-form.html?id=' + item.id" class="flex items-center justify-between px-5 py-3 hover:bg-muted/30 transition-colors">
+                                                <div class="min-w-0">
+                                                    <p class="text-sm font-medium text-foreground truncate" x-text="item.name"></p>
+                                                    <p class="text-xs text-muted-foreground" x-text="item.category"></p>
+                                                </div>
+                                                <span class="px-2 py-0.5 text-xs font-semibold rounded-full ml-3 shrink-0"
+                                                      :class="item.low_stock ? 'bg-destructive/20 text-destructive' : 'bg-secondary/20 text-secondary'"
+                                                      x-text="'Qty: ' + item.quantity"></span>
+                                            </a>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>

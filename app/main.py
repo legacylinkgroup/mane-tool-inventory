@@ -107,6 +107,10 @@ if frontend_path.exists():
     async def inventory_page():
         return FileResponse(str(frontend_path / "inventory.html"))
 
+    @app.get("/containers.html")
+    async def containers_page():
+        return FileResponse(str(frontend_path / "containers.html"))
+
     @app.get("/item-form.html")
     async def item_form_page():
         return FileResponse(str(frontend_path / "item-form.html"))

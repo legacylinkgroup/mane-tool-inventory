@@ -73,6 +73,12 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
                     Inventory
                 </a>
+                <a href="/containers.html"
+                   :class="isActive('/containers') ? 'bg-primary text-primary-foreground' : 'text-sidebar-foreground hover:bg-muted'"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>
+                    Containers
+                </a>
                 <a href="/item-form.html"
                    :class="isActive('/item-form') ? 'bg-primary text-primary-foreground' : 'text-sidebar-foreground hover:bg-muted'"
                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors">
@@ -137,24 +143,46 @@
                         >
                     </div>
 
-                    <!-- Category -->
-                    <div>
+                    <!-- Category (Combobox) -->
+                    <div class="relative" @click.outside="comboboxState.category.open = false">
                         <label class="block text-sm font-medium text-foreground mb-2">
                             Category <span class="text-destructive">*</span>
                         </label>
-                        <input
-                            type="text"
-                            x-model="item.category"
-                            list="categories"
-                            required
-                            placeholder="e.g., Electrical, Power Tools, Carpentry"
-                            class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
-                        >
-                        <datalist id="categories">
-                            <template x-for="cat in categories" :key="cat">
-                                <option :value="cat"></option>
+                        <div class="relative">
+                            <input
+                                type="text"
+                                x-model="comboboxState.category.search"
+                                @input="handleComboInput('category')"
+                                @focus="openCombobox('category')"
+                                @keydown.escape="comboboxState.category.open = false"
+                                required
+                                autocomplete="off"
+                                placeholder="e.g., Electrical, Power Tools, Carpentry"
+                                class="w-full px-4 py-2 pr-10 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
+                            >
+                            <button type="button" @click="comboboxState.category.open = !comboboxState.category.open"
+                                    class="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                     :class="comboboxState.category.open ? 'rotate-180' : ''" class="transition-transform">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </button>
+                        </div>
+                        <div x-show="comboboxState.category.open && filteredCategories().length > 0"
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="opacity-0 -translate-y-1"
+                             x-transition:enter-end="opacity-100 translate-y-0"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="opacity-100"
+                             x-transition:leave-end="opacity-0"
+                             class="absolute z-50 mt-1 w-full max-h-48 overflow-y-auto bg-popover border border-border rounded-lg shadow-lg">
+                            <template x-for="opt in filteredCategories()" :key="opt">
+                                <button type="button" @click="selectOption('category', opt)"
+                                        class="w-full text-left px-4 py-2.5 text-sm text-popover-foreground hover:bg-primary hover:text-primary-foreground transition-colors first:rounded-t-lg last:rounded-b-lg"
+                                        x-text="opt"></button>
                             </template>
-                        </datalist>
+                        </div>
                     </div>
 
                     <!-- Quantity -->
@@ -172,49 +200,93 @@
                         >
                     </div>
 
-                    <!-- Container Name -->
-                    <div>
-                        <label class="block text-sm font-medium text-foreground mb-2">
-                            Container Name <span class="text-destructive">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            x-model="item.container_name"
-                            list="containers-list"
-                            required
-                            placeholder="e.g., Milwaukee Packout A, Drill Case, Shelf Unit 3"
-                            class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
-                        >
-                        <datalist id="containers-list">
-                            <template x-for="c in containers" :key="c">
-                                <option :value="c"></option>
-                            </template>
-                        </datalist>
-                        <p class="mt-1 text-sm text-muted-foreground">
-                            The physical container this item is stored in (QR code will be on this container)
-                        </p>
-                    </div>
-
-                    <!-- Location -->
-                    <div>
+                    <!-- Location (Combobox) — broad first -->
+                    <div class="relative" @click.outside="comboboxState.location.open = false">
                         <label class="block text-sm font-medium text-foreground mb-2">
                             Location <span class="text-destructive">*</span>
                         </label>
-                        <input
-                            type="text"
-                            x-model="item.location"
-                            list="locations-list"
-                            required
-                            placeholder="e.g., Truck 1, Shop, Warehouse"
-                            class="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
-                        >
-                        <datalist id="locations-list">
-                            <template x-for="loc in locations" :key="loc">
-                                <option :value="loc"></option>
+                        <div class="relative">
+                            <input
+                                type="text"
+                                x-model="comboboxState.location.search"
+                                @input="handleComboInput('location')"
+                                @focus="openCombobox('location')"
+                                @keydown.escape="comboboxState.location.open = false"
+                                required
+                                autocomplete="off"
+                                placeholder="e.g., Truck 1, Shop, Warehouse"
+                                class="w-full px-4 py-2 pr-10 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
+                            >
+                            <button type="button" @click="comboboxState.location.open = !comboboxState.location.open"
+                                    class="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                     :class="comboboxState.location.open ? 'rotate-180' : ''" class="transition-transform">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </button>
+                        </div>
+                        <div x-show="comboboxState.location.open && filteredLocations().length > 0"
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="opacity-0 -translate-y-1"
+                             x-transition:enter-end="opacity-100 translate-y-0"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="opacity-100"
+                             x-transition:leave-end="opacity-0"
+                             class="absolute z-50 mt-1 w-full max-h-48 overflow-y-auto bg-popover border border-border rounded-lg shadow-lg">
+                            <template x-for="opt in filteredLocations()" :key="opt">
+                                <button type="button" @click="selectOption('location', opt)"
+                                        class="w-full text-left px-4 py-2.5 text-sm text-popover-foreground hover:bg-primary hover:text-primary-foreground transition-colors first:rounded-t-lg last:rounded-b-lg"
+                                        x-text="opt"></button>
                             </template>
-                        </datalist>
+                        </div>
                         <p class="mt-1 text-sm text-muted-foreground">
                             Where this container lives (e.g., which truck, shop area, or warehouse)
+                        </p>
+                    </div>
+
+                    <!-- Container Name (Combobox) — specific second -->
+                    <div class="relative" @click.outside="comboboxState.container_name.open = false">
+                        <label class="block text-sm font-medium text-foreground mb-2">
+                            Container Name <span class="text-destructive">*</span>
+                        </label>
+                        <div class="relative">
+                            <input
+                                type="text"
+                                x-model="comboboxState.container_name.search"
+                                @input="handleComboInput('container_name')"
+                                @focus="openCombobox('container_name')"
+                                @keydown.escape="comboboxState.container_name.open = false"
+                                required
+                                autocomplete="off"
+                                placeholder="e.g., Milwaukee Packout A, Drill Case, Shelf Unit 3"
+                                class="w-full px-4 py-2 pr-10 border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground"
+                            >
+                            <button type="button" @click="comboboxState.container_name.open = !comboboxState.container_name.open"
+                                    class="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                     :class="comboboxState.container_name.open ? 'rotate-180' : ''" class="transition-transform">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </button>
+                        </div>
+                        <div x-show="comboboxState.container_name.open && filteredContainers().length > 0"
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="opacity-0 -translate-y-1"
+                             x-transition:enter-end="opacity-100 translate-y-0"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="opacity-100"
+                             x-transition:leave-end="opacity-0"
+                             class="absolute z-50 mt-1 w-full max-h-48 overflow-y-auto bg-popover border border-border rounded-lg shadow-lg">
+                            <template x-for="opt in filteredContainers()" :key="opt">
+                                <button type="button" @click="selectOption('container_name', opt)"
+                                        class="w-full text-left px-4 py-2.5 text-sm text-popover-foreground hover:bg-primary hover:text-primary-foreground transition-colors first:rounded-t-lg last:rounded-b-lg"
+                                        x-text="opt"></button>
+                            </template>
+                        </div>
+                        <p class="mt-1 text-sm text-muted-foreground">
+                            The physical container this item is stored in (QR code will be on this container)
                         </p>
                     </div>
 

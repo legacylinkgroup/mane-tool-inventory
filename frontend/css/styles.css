@@ -149,6 +149,18 @@ input[type="file"]::file-selector-button {
     cursor: pointer;
 }
 
+/* ===== Combobox dropdown scrollbar ===== */
+.max-h-48::-webkit-scrollbar {
+    width: 6px;
+}
+.max-h-48::-webkit-scrollbar-track {
+    background: transparent;
+}
+.max-h-48::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+}
+
 /* ===== Sidebar transition ===== */
 .sidebar-transition {
     transition: transform 0.3s ease-in-out;
