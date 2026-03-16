@@ -21,7 +21,8 @@ app = FastAPI(
     description="Inventory management system with QR codes and Alexa integration",
     version="1.0.0",
     docs_url="/api/docs",
-    redoc_url="/api/redoc"
+    redoc_url="/api/redoc",
+    openapi_url="/api/openapi.json"
 )
 
 # Parse allowed origins
