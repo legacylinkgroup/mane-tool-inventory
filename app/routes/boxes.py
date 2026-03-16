@@ -35,6 +35,30 @@ async def get_containers(
         raise HTTPException(status_code=500, detail=f"Error fetching containers: {str(e)}")
 
 
+@router.delete("/wipe", summary="Wipe all items and boxes from the database")
+async def wipe_database(
+    db: Client = Depends(get_supabase_client)
+):
+    """
+    Delete all records from items and boxes tables.
+    Items are deleted first due to foreign key constraint (box_id).
+    """
+    try:
+        # Delete all items first (FK constraint)
+        db.table('items').delete().neq('id', '00000000-0000-0000-0000-000000000000').execute()
+        # Delete all boxes
+        db.table('boxes').delete().neq('id', '00000000-0000-0000-0000-000000000000').execute()
+
+        return {
+            "success": True,
+            "message": "All items and containers have been deleted."
+        }
+
+    except Exception as e:
+        logger.error(f"Error wiping database: {e}")
+        raise HTTPException(status_code=500, detail=f"Error wiping database: {str(e)}")
+
+
 @router.get("/box/{box_id}", summary="Get box details with all items")
 async def get_box(
     box_id: str = Path(..., description="Box UUID"),

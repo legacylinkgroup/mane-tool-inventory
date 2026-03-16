@@ -182,6 +182,36 @@ function adminApp() {
             } catch (error) {
                 alert('QR download failed: ' + error.message);
             }
+        },
+
+        wiping: false,
+        wipeResult: null,
+
+        async wipeDatabase() {
+            const confirmation = prompt('This will permanently delete ALL items and containers.\n\nType WIPE to confirm:');
+            if (confirmation !== 'WIPE') {
+                if (confirmation !== null) alert('Wipe cancelled. You must type exactly "WIPE" to confirm.');
+                return;
+            }
+
+            this.wiping = true;
+            this.wipeResult = null;
+
+            try {
+                const response = await fetch('/api/wipe', { method: 'DELETE' });
+                const data = await response.json();
+
+                if (data.success) {
+                    this.wipeResult = { success: true, message: data.message };
+                    setTimeout(() => window.location.href = '/', 2000);
+                } else {
+                    this.wipeResult = { success: false, message: 'Wipe failed: ' + (data.detail || 'Unknown error') };
+                }
+            } catch (error) {
+                this.wipeResult = { success: false, message: 'Wipe failed: ' + error.message };
+            } finally {
+                this.wiping = false;
+            }
         }
     };
 }
