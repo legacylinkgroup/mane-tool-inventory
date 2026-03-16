@@ -98,6 +98,15 @@ if frontend_path.exists():
     app.mount("/css", StaticFiles(directory=str(frontend_path / "css")), name="css")
     app.mount("/images", StaticFiles(directory=str(frontend_path / "images")), name="images")
 
+    # Manifest and favicon
+    @app.get("/manifest.json", include_in_schema=False)
+    async def manifest():
+        return FileResponse(str(frontend_path / "manifest.json"), media_type="application/manifest+json")
+
+    @app.get("/favicon.svg", include_in_schema=False)
+    async def favicon():
+        return FileResponse(str(frontend_path / "images" / "favicon.svg"), media_type="image/svg+xml")
+
     # Frontend routes
     @app.get("/admin.html")
     async def admin_page():
