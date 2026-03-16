@@ -36,7 +36,7 @@ class QRCodeGenerator:
 
         # Generate QR code URL (points to /box/{box_id} endpoint)
         # Use environment-aware base URL
-        app_url = "http://localhost:8000" if settings.environment == "development" else "https://tool-inventory.vercel.app"
+        app_url = settings.vercel_url or "http://localhost:8000"
         qr_data = f"{app_url}/box/{box_id}"
 
         # Generate QR code image
@@ -165,7 +165,7 @@ class QRCodeGenerator:
 
     def _generate_qr_image(self, box_id: str) -> io.BytesIO:
         """Generate QR code image as BytesIO object for PDF embedding."""
-        app_url = "http://localhost:8000" if settings.environment == "development" else "https://tool-inventory.vercel.app"
+        app_url = settings.vercel_url or "http://localhost:8000"
         qr_data = f"{app_url}/box/{box_id}"
 
         qr = qrcode.QRCode(

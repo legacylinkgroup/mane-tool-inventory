@@ -144,7 +144,7 @@ function adminApp() {
 
                 const data = await response.json();
 
-                if (data.success || response.ok) {
+                if (response.ok && data.success) {
                     this.uploadResult = {
                         success: true,
                         message: `Upload complete! ${data.summary.items_created} items created, ${data.summary.items_updated} items updated, ${data.summary.boxes_created} new containers.`,
@@ -170,7 +170,13 @@ function adminApp() {
 
         async exportCSV() {
             try {
-                window.location.href = '/api/export';
+                const response = await fetch('/api/export');
+                if (!response.ok) { alert('Export failed'); return; }
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = 'inventory_export.csv'; a.click();
+                URL.revokeObjectURL(url);
             } catch (error) {
                 alert('Export failed: ' + error.message);
             }
@@ -178,7 +184,13 @@ function adminApp() {
 
         async downloadQR() {
             try {
-                window.location.href = '/api/qr/download';
+                const response = await fetch('/api/qr/download');
+                if (!response.ok) { alert('QR download failed'); return; }
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = 'qr_codes.pdf'; a.click();
+                URL.revokeObjectURL(url);
             } catch (error) {
                 alert('QR download failed: ' + error.message);
             }
@@ -198,7 +210,11 @@ function adminApp() {
             this.wipeResult = null;
 
             try {
-                const response = await fetch('/api/wipe', { method: 'DELETE' });
+                const response = await fetch('/api/wipe', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ confirm: 'WIPE' })
+                });
                 const data = await response.json();
 
                 if (data.success) {
@@ -295,13 +311,13 @@ function itemFormApp() {
 
         async loadItem() {
             try {
-                const response = await fetch(`/api/items?limit=1000`);
+                const response = await fetch(`/api/item/${this.itemId}`);
                 const data = await response.json();
                 if (!data.success || !data.data) {
                     alert('Could not load item. Please try again.');
                     return;
                 }
-                const item = data.data.find(i => i.id === this.itemId);
+                const item = data.data;
 
                 if (item) {
                     this.item = {

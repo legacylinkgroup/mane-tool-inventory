@@ -35,8 +35,10 @@ async def upload_csv(file: UploadFile = File(...)) -> Dict:
         )
 
     try:
-        # Read file content
+        # Read file content with size limit
         content = await file.read()
+        if len(content) > 10 * 1024 * 1024:  # 10MB
+            raise HTTPException(status_code=413, detail="File too large (max 10MB)")
 
         # Process upload
         upload_service = UploadService()

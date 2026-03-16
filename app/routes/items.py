@@ -67,10 +67,17 @@ async def get_items(
         if location or container:
             items = [item for item in items if item.get('boxes') is not None]
 
-        total = len(items)
+        # Get accurate total count (not just page count)
+        count_query = db.table('items').select('id', count='exact')
+        if search:
+            count_query = count_query.ilike('name', f'%{search}%')
+        if category:
+            count_query = count_query.eq('category', category)
+        count_result = count_query.execute()
+        total = count_result.count if count_result.count is not None else len(items)
 
         for item in items:
-            item['low_stock'] = item['quantity'] < item.get('low_stock_threshold', 5)
+            item['low_stock'] = item['quantity'] <= item.get('low_stock_threshold', 5)
 
         return {
             "success": True,
@@ -124,6 +131,33 @@ async def get_filters(db: Client = Depends(get_supabase_client)):
     except Exception as e:
         logger.error(f"Error fetching filters: {e}")
         raise HTTPException(status_code=500, detail="Error fetching filter options")
+
+
+@router.get("/item/{item_id}", summary="Get single item by ID")
+async def get_item(
+    item_id: str = Path(..., description="Item UUID"),
+    db: Client = Depends(get_supabase_client)
+):
+    """Get a single item by its UUID, including its box details."""
+    try:
+        result = db.table('items').select('*, boxes(id, name, location)').eq('id', item_id).execute()
+
+        if not result.data:
+            raise HTTPException(status_code=404, detail="Item not found")
+
+        item = result.data[0]
+        item['low_stock'] = item['quantity'] <= item.get('low_stock_threshold', 5)
+
+        return {
+            "success": True,
+            "data": item
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching item {item_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching item: {str(e)}")
 
 
 @router.post("/item", status_code=201, summary="Create new item")
@@ -208,12 +242,8 @@ async def update_item(
 
 async def _get_or_create_box(db: Client, container_name: str, location: str) -> str:
     """Look up a box by container name, or create it with the given location."""
-    response = db.table('boxes').select('id').eq('name', container_name).execute()
-
-    if response.data and len(response.data) > 0:
-        return response.data[0]['id']
-
-    # Create new box
-    new_box = {'name': container_name, 'location': location}
-    result = db.table('boxes').insert(new_box).execute()
+    result = db.table('boxes').upsert(
+        {'name': container_name, 'location': location},
+        on_conflict='name'
+    ).execute()
     return result.data[0]['id']

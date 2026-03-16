@@ -58,18 +58,6 @@ async def startup_event():
         logger.error(f"❌ Startup failed: {e}")
         # Don't crash the app, but log the error
         # This allows the /api/docs to still be accessible for debugging
-
-# Root route moved to bottom of file to serve frontend HTML
-# @app.get("/")
-# async def root():
-#     """Health check endpoint."""
-#     return {
-#         "status": "ok",
-#         "message": "Tool Inventory API",
-#         "version": "1.0.0",
-#         "environment": settings.environment
-#     }
-
 @app.get("/api/health")
 async def health():
     """Detailed health check."""

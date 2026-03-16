@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Path
+from pydantic import BaseModel, Field
 from supabase import Client
 from app.services.db import get_supabase_client
 import logging
@@ -22,7 +23,7 @@ async def get_containers(
             items = box.get('items', [])
             box['item_count'] = len(items)
             for item in items:
-                item['low_stock'] = item['quantity'] < item.get('low_stock_threshold', 5)
+                item['low_stock'] = item['quantity'] <= item.get('low_stock_threshold', 5)
 
         return {
             "success": True,
@@ -35,8 +36,13 @@ async def get_containers(
         raise HTTPException(status_code=500, detail=f"Error fetching containers: {str(e)}")
 
 
+class WipeConfirmation(BaseModel):
+    confirm: str = Field(..., pattern="^WIPE$")
+
+
 @router.delete("/wipe", summary="Wipe all items and boxes from the database")
 async def wipe_database(
+    body: WipeConfirmation,
     db: Client = Depends(get_supabase_client)
 ):
     """
