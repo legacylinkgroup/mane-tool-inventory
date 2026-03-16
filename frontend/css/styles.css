@@ -1,0 +1,61 @@
+/* Custom styles for Tool Inventory */
+
+/* Smooth transitions */
+* {
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+/* Low stock highlighting */
+.low-stock-row {
+    background-color: #fef3c7;
+    border-left: 4px solid #f59e0b;
+}
+
+/* Mobile-friendly touch targets */
+@media (max-width: 768px) {
+    button, a, input, select {
+        min-height: 44px;
+    }
+}
+
+/* Image placeholder */
+img[src*="placeholder"] {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-center;
+    color: white;
+}
+
+/* Loading spinner */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Print styles for QR codes */
+@media print {
+    body {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+}
+
+/* File input styling */
+input[type="file"]::file-selector-button {
+    cursor: pointer;
+}
+
+/* Responsive table */
+@media (max-width: 768px) {
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
