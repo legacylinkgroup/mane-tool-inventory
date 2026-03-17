@@ -203,20 +203,21 @@
         <div x-show="!loading && !error">
             <!-- Header -->
             <header class="mb-8">
-                <div class="flex items-start justify-between no-print">
-                    <div>
-                        <p class="text-sm font-medium text-primary uppercase tracking-wider mb-1">Container</p>
-                        <h1 class="text-4xl font-bold text-foreground mb-2" x-text="box?.name"></h1>
-                        <p class="text-lg text-muted-foreground">
-                            Location: <span class="font-semibold text-foreground" x-text="box?.location"></span>
-                            <span x-show="box?.sublocation" class="text-muted-foreground">
-                                &mdash; <span x-text="box?.sublocation"></span>
-                            </span>
-                        </p>
-                    </div>
-                    <a href="/" class="px-4 py-2 bg-muted text-foreground rounded-lg hover:opacity-80">
-                        Back
+                <div class="no-print">
+                    <a href="/" class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                        Back to Dashboard
                     </a>
+                </div>
+                <div class="no-print">
+                    <p class="text-sm font-medium text-primary uppercase tracking-wider mb-1">Container</p>
+                    <h1 class="text-4xl font-bold text-foreground mb-2" x-text="box?.name"></h1>
+                    <p class="text-lg text-muted-foreground">
+                        Location: <span class="font-semibold text-foreground" x-text="box?.location"></span>
+                        <span x-show="box?.sublocation" class="text-muted-foreground">
+                            &mdash; <span x-text="box?.sublocation"></span>
+                        </span>
+                    </p>
                 </div>
 
                 <!-- QR Code + Print Label -->
