@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Path
+from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, Field
 from supabase import Client
 from app.services.db import get_supabase_client
@@ -25,11 +26,11 @@ async def get_containers(
             for item in items:
                 item['low_stock'] = item['quantity'] <= item.get('low_stock_threshold', 5)
 
-        return {
+        return jsonable_encoder({
             "success": True,
             "total": len(boxes),
             "data": boxes
-        }
+        })
 
     except Exception as e:
         logger.error(f"Error fetching containers: {e}")
@@ -92,13 +93,13 @@ async def get_box(
         for item in items:
             item['low_stock'] = item['quantity'] < item.get('low_stock_threshold', 5)
 
-        return {
+        return jsonable_encoder({
             "success": True,
             "data": {
                 "box": box,
                 "items": items
             }
-        }
+        })
 
     except HTTPException:
         raise

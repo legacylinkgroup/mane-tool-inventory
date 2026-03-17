@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.encoders import jsonable_encoder
 from supabase import Client
 from app.services.db import get_supabase_client
 import logging
@@ -44,7 +45,7 @@ async def get_dashboard(db: Client = Depends(get_supabase_client)):
             if item.get('quantity', 0) <= item.get('low_stock_threshold', 5)
         ]
 
-        return {
+        return jsonable_encoder({
             "success": True,
             "data": {
                 "total_items": total_items,
@@ -54,7 +55,7 @@ async def get_dashboard(db: Client = Depends(get_supabase_client)):
                 "recent_items": recent_items,
                 "low_stock_items": low_stock_items
             }
-        }
+        })
 
     except Exception as e:
         logger.error(f"Error fetching dashboard stats: {e}")

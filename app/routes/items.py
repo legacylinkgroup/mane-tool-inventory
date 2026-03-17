@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, Query, HTTPException, Path
+from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, Field
 from supabase import Client
 from app.services.db import get_supabase_client
@@ -79,13 +80,13 @@ async def get_items(
         for item in items:
             item['low_stock'] = item['quantity'] <= item.get('low_stock_threshold', 5)
 
-        return {
+        return jsonable_encoder({
             "success": True,
             "total": total,
             "limit": limit,
             "offset": offset,
             "data": items
-        }
+        })
 
     except Exception as e:
         logger.error(f"Error fetching items: {e}")
@@ -148,10 +149,10 @@ async def get_item(
         item = result.data[0]
         item['low_stock'] = item['quantity'] <= item.get('low_stock_threshold', 5)
 
-        return {
+        return jsonable_encoder({
             "success": True,
             "data": item
-        }
+        })
 
     except HTTPException:
         raise
@@ -193,10 +194,10 @@ async def create_item(
         if not result.data:
             raise HTTPException(status_code=500, detail="Failed to create item")
 
-        return {
+        return jsonable_encoder({
             "success": True,
             "data": result.data[0]
-        }
+        })
 
     except HTTPException:
         raise
@@ -235,10 +236,10 @@ async def update_item(
 
         result = db.table('items').update(update_data).eq('id', item_id).execute()
 
-        return {
+        return jsonable_encoder({
             "success": True,
             "data": result.data[0] if result.data else None
-        }
+        })
 
     except HTTPException:
         raise
