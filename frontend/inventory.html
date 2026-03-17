@@ -259,7 +259,7 @@
                                         <div class="flex items-center gap-2">
                                             <a :href="'/item-form.html?id=' + item.id" class="text-sm text-primary hover:underline">Edit</a>
                                             <button @click="openTransfer(item)" class="p-1 text-muted-foreground hover:text-primary" title="Move to another container">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><path d="M21 3l-7 7"/><polyline points="9 21 3 21 3 15"/><path d="M3 21l7-7"/></svg>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9V5c0-1.1.9-2 2-2h3.93a2 2 0 0 1 1.66.9l.82 1.2a2 2 0 0 0 1.66.9H20a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-1"/><path d="M2 13h10"/><path d="m9 16 3-3-3-3"/></svg>
                                             </button>
                                             <button @click="confirmDeleteItem(item)" class="p-1 text-muted-foreground hover:text-destructive" title="Delete item">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
@@ -305,7 +305,7 @@
                                 </div>
                                 <div class="flex items-center gap-1">
                                     <button @click="openTransfer(item)" class="p-2 text-muted-foreground hover:text-primary rounded-lg" title="Move">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><path d="M21 3l-7 7"/><polyline points="9 21 3 21 3 15"/><path d="M3 21l7-7"/></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9V5c0-1.1.9-2 2-2h3.93a2 2 0 0 1 1.66.9l.82 1.2a2 2 0 0 0 1.66.9H20a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-1"/><path d="M2 13h10"/><path d="m9 16 3-3-3-3"/></svg>
                                     </button>
                                     <button @click="confirmDeleteItem(item)" class="p-2 text-muted-foreground hover:text-destructive rounded-lg" title="Delete">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
@@ -350,6 +350,12 @@
                         <h3 class="text-lg font-bold text-foreground mb-1">Move Item</h3>
                         <p class="text-sm text-muted-foreground mb-4">Move "<span x-text="transferItem?.name"></span>" to a different container.</p>
                         <div class="space-y-3 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-foreground mb-1">Location</label>
+                                <input type="text" x-model="transferLocation"
+                                       placeholder="e.g., Truck 1, Shop"
+                                       class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring">
+                            </div>
                             <div class="relative">
                                 <label class="block text-sm font-medium text-foreground mb-1">Container</label>
                                 <input type="text" x-model="transferSearch" @input="transferContainer = transferSearch"
@@ -361,12 +367,6 @@
                                                 class="w-full text-left px-3 py-2 text-sm hover:bg-primary hover:text-primary-foreground" x-text="c"></button>
                                     </template>
                                 </div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-foreground mb-1">Location</label>
-                                <input type="text" x-model="transferLocation"
-                                       placeholder="e.g., Truck 1, Shop"
-                                       class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring">
                             </div>
                         </div>
                         <div class="flex gap-3 justify-end">
