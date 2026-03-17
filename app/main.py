@@ -112,6 +112,10 @@ if frontend_path.exists():
     async def item_form_page():
         return FileResponse(str(frontend_path / "item-form.html"))
 
+    @app.get("/help.html")
+    async def help_page():
+        return FileResponse(str(frontend_path / "help.html"))
+
     @app.get("/box/{box_id}")
     async def box_page(box_id: str):
         return FileResponse(str(frontend_path / "box.html"))

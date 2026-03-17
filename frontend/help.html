@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help & Instructions - Tool Inventory</title>
+    <meta name="description" content="Inventory management system with QR codes for containers and tools">
+    <meta name="theme-color" content="#171717">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Tool Inventory">
+    <meta property="og:description" content="Inventory management with QR codes for containers and tools">
+    <meta property="og:image" content="/images/og-image.png">
+    <meta property="og:url" content="/help.html">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Tool Inventory">
+    <meta name="twitter:description" content="Inventory management with QR codes for containers and tools">
+    <meta name="twitter:image" content="/images/og-image.png">
+
+    <!-- Favicon & App Icons -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- iOS Web App -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Tool Inventory">
+
+    <script>
+      if (localStorage.getItem('darkMode') === 'true' ||
+          (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            background: 'var(--background)',
+            foreground: 'var(--foreground)',
+            card: { DEFAULT: 'var(--card)', foreground: 'var(--card-foreground)' },
+            popover: { DEFAULT: 'var(--popover)', foreground: 'var(--popover-foreground)' },
+            primary: { DEFAULT: 'var(--primary)', foreground: 'var(--primary-foreground)' },
+            secondary: { DEFAULT: 'var(--secondary)', foreground: 'var(--secondary-foreground)' },
+            muted: { DEFAULT: 'var(--muted)', foreground: 'var(--muted-foreground)' },
+            accent: { DEFAULT: 'var(--accent)', foreground: 'var(--accent-foreground)' },
+            destructive: { DEFAULT: 'var(--destructive)', foreground: 'var(--destructive-foreground)' },
+            border: 'var(--border)',
+            input: 'var(--input)',
+            ring: 'var(--ring)',
+            sidebar: { DEFAULT: 'var(--sidebar)', foreground: 'var(--sidebar-foreground)', border: 'var(--sidebar-border)', primary: 'var(--sidebar-primary)', accent: 'var(--sidebar-accent)' },
+          },
+          fontFamily: {
+            sans: ['var(--font-sans)'],
+            mono: ['var(--font-mono)'],
+          },
+        }
+      }
+    }
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="bg-background text-foreground min-h-screen font-sans">
+    <div x-data="{ ...sidebarLayout(), openFaq: null }" class="min-h-screen flex">
+
+        <!-- Mobile Overlay -->
+        <div x-show="sidebarOpen" x-transition.opacity class="fixed inset-0 bg-black/50 z-40 lg:hidden" @click="sidebarOpen = false"></div>
+
+        <!-- Sidebar -->
+        <aside
+            :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+            class="fixed lg:static lg:translate-x-0 z-50 w-64 h-screen bg-sidebar border-r border-sidebar-border flex flex-col sidebar-transition overflow-y-auto shrink-0"
+        >
+            <!-- Logo -->
+            <div class="p-5 border-b border-sidebar-border">
+                <h2 class="text-xl font-bold text-sidebar-foreground tracking-tight">Tool Inventory</h2>
+                <p class="text-xs text-muted-foreground mt-1">Inventory Management</p>
+            </div>
+
+            <!-- Nav Links -->
+            <nav class="flex-1 p-3 space-y-1">
+                <a href="/"
+                   :class="isActive('/') ? 'bg-primary text-primary-foreground' : 'text-sidebar-foreground hover:bg-muted'"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                    Dashboard
+                </a>
+                <a href="/inventory.html"
+                   :class="isActive('/inventory') ? 'bg-primary text-primary-foreground' : 'text-sidebar-foreground hover:bg-muted'"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                    Inventory
+                </a>
+                <a href="/containers.html"
+                   :class="isActive('/containers') ? 'bg-primary text-primary-foreground' : 'text-sidebar-foreground hover:bg-muted'"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>
+                    Containers
+                </a>
+                <a href="/item-form.html"
+                   :class="isActive('/item-form') ? 'bg-primary text-primary-foreground' : 'text-sidebar-foreground hover:bg-muted'"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add Item
+                </a>
+                <a href="/admin.html"
+                   :class="isActive('/admin') ? 'bg-primary text-primary-foreground' : 'text-sidebar-foreground hover:bg-muted'"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    Admin
+                </a>
+                <a href="/help.html"
+                   :class="isActive('/help') ? 'bg-primary text-primary-foreground' : 'text-sidebar-foreground hover:bg-muted'"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Help
+                </a>
+            </nav>
+
+            <!-- Dark Mode Toggle -->
+            <div class="p-3 border-t border-sidebar-border">
+                <button onclick="toggleDarkMode()" class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-muted transition-colors">
+                    <svg class="dark:hidden" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    <svg class="hidden dark:block" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    <span class="dark:hidden">Dark Mode</span>
+                    <span class="hidden dark:inline">Light Mode</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 min-h-screen bg-background overflow-y-auto">
+            <!-- Mobile Header -->
+            <header class="lg:hidden flex items-center gap-4 p-4 border-b border-border bg-card">
+                <button @click="sidebarOpen = !sidebarOpen" class="p-2 hover:bg-muted rounded-lg" aria-label="Toggle menu">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                </button>
+                <h1 class="text-lg font-bold">Help & Instructions</h1>
+            </header>
+
+            <!-- Help Content -->
+            <div class="p-6 lg:p-8 max-w-4xl">
+                <!-- Page Header (Desktop) -->
+                <div class="hidden lg:block mb-8">
+                    <h1 class="text-3xl font-bold text-foreground">Help & Instructions</h1>
+                    <p class="text-muted-foreground mt-1">Everything you need to get started with Tool Inventory</p>
+                </div>
+
+                <!-- ============================================ -->
+                <!-- SECTION 1: Getting Started (Core Workflow)   -->
+                <!-- ============================================ -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-semibold text-foreground mb-5 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                        Getting Started
+                    </h2>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Step 1 -->
+                        <div class="bg-card rounded-lg border border-border p-5">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold">1</span>
+                                <h3 class="font-semibold text-foreground">Add an Item</h3>
+                            </div>
+                            <p class="text-sm text-muted-foreground leading-relaxed">
+                                Click <strong class="text-foreground">Add Item</strong> in the sidebar. Fill in the name, category, and quantity. That's all you need to get started.
+                            </p>
+                        </div>
+
+                        <!-- Step 2 -->
+                        <div class="bg-card rounded-lg border border-border p-5">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold">2</span>
+                                <h3 class="font-semibold text-foreground">Assign to a Container</h3>
+                            </div>
+                            <p class="text-sm text-muted-foreground leading-relaxed">
+                                Type a container name (e.g., "Red Toolbox") and location (e.g., "Garage"). If the container doesn't exist yet, it's created automatically.
+                            </p>
+                        </div>
+
+                        <!-- Step 3 -->
+                        <div class="bg-card rounded-lg border border-border p-5">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold">3</span>
+                                <h3 class="font-semibold text-foreground">Print a QR Label</h3>
+                            </div>
+                            <p class="text-sm text-muted-foreground leading-relaxed">
+                                Go to <strong class="text-foreground">Containers</strong>, click <strong class="text-foreground">View QR</strong> on any container, then hit <strong class="text-foreground">Print Label</strong>. Stick the printed label on the physical box.
+                            </p>
+                        </div>
+
+                        <!-- Step 4 -->
+                        <div class="bg-card rounded-lg border border-border p-5">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold">4</span>
+                                <h3 class="font-semibold text-foreground">Scan to Find</h3>
+                            </div>
+                            <p class="text-sm text-muted-foreground leading-relaxed">
+                                Point your phone camera at a QR label. It opens straight to that container's contents &mdash; no app download needed.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================ -->
+                <!-- SECTION 2: QR Code Flow (Visual)             -->
+                <!-- ============================================ -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-semibold text-foreground mb-5 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="17" y="17" width="4" height="4"/><line x1="14" y1="14" x2="14" y2="14.01"/></svg>
+                        How QR Codes Work
+                    </h2>
+
+                    <div class="bg-card rounded-lg border border-border p-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+                            <!-- Print -->
+                            <div>
+                                <div class="flex items-center justify-center w-14 h-14 mx-auto mb-3 rounded-full bg-primary/10">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                                </div>
+                                <h3 class="font-semibold text-foreground mb-1">Print the Label</h3>
+                                <p class="text-sm text-muted-foreground">Each container gets a unique QR code. Print it from the Containers page.</p>
+                            </div>
+
+                            <!-- Stick -->
+                            <div>
+                                <div class="flex items-center justify-center w-14 h-14 mx-auto mb-3 rounded-full bg-primary/10">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>
+                                </div>
+                                <h3 class="font-semibold text-foreground mb-1">Stick on the Box</h3>
+                                <p class="text-sm text-muted-foreground">Tape or stick the label directly on the physical container, shelf, or drawer.</p>
+                            </div>
+
+                            <!-- Scan -->
+                            <div>
+                                <div class="flex items-center justify-center w-14 h-14 mx-auto mb-3 rounded-full bg-primary/10">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 2l-4 5-4-5"/></svg>
+                                </div>
+                                <h3 class="font-semibold text-foreground mb-1">Scan to View</h3>
+                                <p class="text-sm text-muted-foreground">Open your phone camera, point it at the QR code, and instantly see what's inside.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================ -->
+                <!-- SECTION 3: Bulk Import (CSV Quick-Start)     -->
+                <!-- ============================================ -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-semibold text-foreground mb-5 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        Bulk Import via CSV
+                    </h2>
+
+                    <div class="bg-card rounded-lg border border-border p-6">
+                        <p class="text-sm text-muted-foreground mb-4">
+                            Already have a spreadsheet? Save it as a <strong class="text-foreground">.csv</strong> file and upload it on the
+                            <a href="/admin.html" class="text-primary hover:underline">Admin page</a>.
+                            The system will create items and containers automatically.
+                        </p>
+
+                        <p class="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Required Columns</p>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm border border-border rounded-lg overflow-hidden">
+                                <thead>
+                                    <tr class="bg-muted/50">
+                                        <th class="px-4 py-2 text-left font-medium text-foreground">Item Name</th>
+                                        <th class="px-4 py-2 text-left font-medium text-foreground">Category</th>
+                                        <th class="px-4 py-2 text-left font-medium text-foreground">Quantity</th>
+                                        <th class="px-4 py-2 text-left font-medium text-foreground">Box/Location</th>
+                                        <th class="px-4 py-2 text-left font-medium text-foreground">Dropbox URL</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-t border-border">
+                                        <td class="px-4 py-2 text-muted-foreground">DeWalt Drill</td>
+                                        <td class="px-4 py-2 text-muted-foreground">Power Tools</td>
+                                        <td class="px-4 py-2 text-muted-foreground">1</td>
+                                        <td class="px-4 py-2 text-muted-foreground">Garage/Red Toolbox</td>
+                                        <td class="px-4 py-2 text-muted-foreground">https://...</td>
+                                    </tr>
+                                    <tr class="border-t border-border">
+                                        <td class="px-4 py-2 text-muted-foreground">Phillips Screwdriver Set</td>
+                                        <td class="px-4 py-2 text-muted-foreground">Hand Tools</td>
+                                        <td class="px-4 py-2 text-muted-foreground">3</td>
+                                        <td class="px-4 py-2 text-muted-foreground">Workshop/Drawer A</td>
+                                        <td class="px-4 py-2 text-muted-foreground"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="text-xs text-muted-foreground mt-3">
+                            The Box/Location column uses the format <code class="px-1 py-0.5 bg-muted rounded text-foreground">Location/Container Name</code>.
+                            If a container doesn't exist, it will be created. Dropbox URL is optional.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- ============================================ -->
+                <!-- SECTION 4: FAQ Accordion                     -->
+                <!-- ============================================ -->
+                <section class="mb-10">
+                    <h2 class="text-xl font-semibold text-foreground mb-5 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        Frequently Asked Questions
+                    </h2>
+
+                    <div class="space-y-2">
+                        <!-- FAQ 1 -->
+                        <div class="bg-card rounded-lg border border-border overflow-hidden">
+                            <button @click="openFaq = openFaq === 1 ? null : 1" class="w-full flex items-center justify-between px-5 py-4 text-left">
+                                <span class="font-medium text-foreground text-sm">How do I move an item to a different container?</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground transition-transform" :class="openFaq === 1 ? 'rotate-180' : ''"><polyline points="6 9 12 15 18 9"/></svg>
+                            </button>
+                            <div x-show="openFaq === 1" x-collapse class="px-5 pb-4">
+                                <p class="text-sm text-muted-foreground leading-relaxed">Go to <strong class="text-foreground">Inventory</strong>, click on the item, then click <strong class="text-foreground">Edit</strong>. Change the container name to the new one and save. If the new container doesn't exist, it will be created automatically.</p>
+                            </div>
+                        </div>
+
+                        <!-- FAQ 2 -->
+                        <div class="bg-card rounded-lg border border-border overflow-hidden">
+                            <button @click="openFaq = openFaq === 2 ? null : 2" class="w-full flex items-center justify-between px-5 py-4 text-left">
+                                <span class="font-medium text-foreground text-sm">What does "Low Stock" mean?</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground transition-transform" :class="openFaq === 2 ? 'rotate-180' : ''"><polyline points="6 9 12 15 18 9"/></svg>
+                            </button>
+                            <div x-show="openFaq === 2" x-collapse class="px-5 pb-4">
+                                <p class="text-sm text-muted-foreground leading-relaxed">An item shows <strong class="text-foreground">Low Stock</strong> when its quantity is at or below its threshold (default: 5). These items appear on the Dashboard under Low Stock Alerts so you know what needs restocking.</p>
+                            </div>
+                        </div>
+
+                        <!-- FAQ 3 -->
+                        <div class="bg-card rounded-lg border border-border overflow-hidden">
+                            <button @click="openFaq = openFaq === 3 ? null : 3" class="w-full flex items-center justify-between px-5 py-4 text-left">
+                                <span class="font-medium text-foreground text-sm">Can I use this on my phone?</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground transition-transform" :class="openFaq === 3 ? 'rotate-180' : ''"><polyline points="6 9 12 15 18 9"/></svg>
+                            </button>
+                            <div x-show="openFaq === 3" x-collapse class="px-5 pb-4">
+                                <p class="text-sm text-muted-foreground leading-relaxed">Yes! This app works on any phone browser. For the best experience on iPhone, open the app in Safari, tap the <strong class="text-foreground">Share</strong> button, then <strong class="text-foreground">Add to Home Screen</strong>. It will look and feel like a native app.</p>
+                            </div>
+                        </div>
+
+                        <!-- FAQ 4 -->
+                        <div class="bg-card rounded-lg border border-border overflow-hidden">
+                            <button @click="openFaq = openFaq === 4 ? null : 4" class="w-full flex items-center justify-between px-5 py-4 text-left">
+                                <span class="font-medium text-foreground text-sm">How do I add a manual or PDF link to an item?</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground transition-transform" :class="openFaq === 4 ? 'rotate-180' : ''"><polyline points="6 9 12 15 18 9"/></svg>
+                            </button>
+                            <div x-show="openFaq === 4" x-collapse class="px-5 pb-4">
+                                <p class="text-sm text-muted-foreground leading-relaxed">When adding or editing an item, paste the link into the <strong class="text-foreground">Manual URL</strong> field. A "View Manual" button will then appear on the item's card, linking directly to the PDF or document.</p>
+                            </div>
+                        </div>
+
+                        <!-- FAQ 5 -->
+                        <div class="bg-card rounded-lg border border-border overflow-hidden">
+                            <button @click="openFaq = openFaq === 5 ? null : 5" class="w-full flex items-center justify-between px-5 py-4 text-left">
+                                <span class="font-medium text-foreground text-sm">How do I edit or update an existing item?</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground transition-transform" :class="openFaq === 5 ? 'rotate-180' : ''"><polyline points="6 9 12 15 18 9"/></svg>
+                            </button>
+                            <div x-show="openFaq === 5" x-collapse class="px-5 pb-4">
+                                <p class="text-sm text-muted-foreground leading-relaxed">Go to the <strong class="text-foreground">Inventory</strong> page, find the item, and click the <strong class="text-foreground">Edit</strong> button on its card. You can change any field including the name, quantity, container, and category.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>
