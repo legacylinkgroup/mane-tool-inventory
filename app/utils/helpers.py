@@ -1,24 +1,22 @@
 from uuid import UUID
+from decimal import Decimal
 from typing import Any, Dict
 
 
 def serialize_for_supabase(data: dict) -> dict:
     """
-    Convert UUID objects to strings for Supabase.
+    Convert non-JSON-serializable Python types for the Supabase client.
 
-    Supabase Python client expects UUIDs as strings, but Pydantic models use UUID4 type.
-    This helper ensures consistent serialization across all endpoints.
-
-    Args:
-        data: Dictionary with potential UUID values
-
-    Returns:
-        Dictionary with UUIDs converted to strings
+    The supabase-py HTTP client uses standard json.dumps internally,
+    which cannot handle UUID or Decimal objects. This converts them
+    to strings/floats before the request is sent.
     """
     result = {}
     for key, value in data.items():
         if isinstance(value, UUID):
             result[key] = str(value)
+        elif isinstance(value, Decimal):
+            result[key] = float(value)
         else:
             result[key] = value
     return result
