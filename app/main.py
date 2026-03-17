@@ -1,12 +1,22 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from app.config import settings
 from app.services.db import verify_schema
+import json
 import logging
 import uuid
+from decimal import Decimal
 from pathlib import Path
+
+
+class DecimalEncoder(json.JSONEncoder):
+    """JSON encoder that converts Decimal to float."""
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            return float(obj)
+        return super().default(obj)
 
 # Configure logging
 logging.basicConfig(
@@ -15,6 +25,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+class DecimalJSONResponse(JSONResponse):
+    """JSONResponse that handles Decimal serialization."""
+    def render(self, content) -> bytes:
+        return json.dumps(content, cls=DecimalEncoder, ensure_ascii=False).encode("utf-8")
+
+
 # Create FastAPI app
 app = FastAPI(
     title="Tool Inventory API",
@@ -22,7 +38,8 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/api/docs",
     redoc_url="/api/redoc",
-    openapi_url="/api/openapi.json"
+    openapi_url="/api/openapi.json",
+    default_response_class=DecimalJSONResponse
 )
 
 # Parse allowed origins

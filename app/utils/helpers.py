@@ -1,6 +1,7 @@
 from uuid import UUID
 from typing import Any, Dict
 
+
 def serialize_for_supabase(data: dict) -> dict:
     """
     Convert UUID objects to strings for Supabase.
@@ -21,17 +22,3 @@ def serialize_for_supabase(data: dict) -> dict:
         else:
             result[key] = value
     return result
-
-def deserialize_from_supabase(data: dict) -> dict:
-    """
-    Convert string UUIDs from Supabase to proper types if needed.
-
-    Args:
-        data: Dictionary from Supabase response
-
-    Returns:
-        Dictionary with processed values
-    """
-    # For now, we let Pydantic handle conversion
-    # This is a placeholder for future custom deserialization
-    return data
