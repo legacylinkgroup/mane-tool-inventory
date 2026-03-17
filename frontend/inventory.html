@@ -245,14 +245,26 @@
                                     </td>
                                     <td class="px-5 py-3 text-sm text-muted-foreground" x-text="item.category"></td>
                                     <td class="px-5 py-3">
-                                        <span class="px-2 py-0.5 text-xs font-semibold rounded-full"
-                                              :class="item.quantity <= (item.low_stock_threshold || 5) ? 'bg-destructive/20 text-destructive' : 'bg-secondary/20 text-secondary'"
-                                              x-text="item.quantity"></span>
+                                        <div class="flex items-center gap-1.5">
+                                            <button @click="updateQty(item, -1)" class="w-7 h-7 flex items-center justify-center rounded-md bg-muted hover:bg-muted/80 text-foreground text-sm font-bold">-</button>
+                                            <span class="px-2 py-0.5 text-xs font-semibold rounded-full min-w-[2rem] text-center"
+                                                  :class="item.quantity <= (item.low_stock_threshold || 5) ? 'bg-destructive/20 text-destructive' : 'bg-secondary/20 text-secondary'"
+                                                  x-text="item.quantity"></span>
+                                            <button @click="updateQty(item, 1)" class="w-7 h-7 flex items-center justify-center rounded-md bg-muted hover:bg-muted/80 text-foreground text-sm font-bold">+</button>
+                                        </div>
                                     </td>
                                     <td class="px-5 py-3 text-sm text-muted-foreground" x-text="item.boxes?.name"></td>
                                     <td class="px-5 py-3 text-sm text-muted-foreground" x-text="item.boxes?.location"></td>
                                     <td class="px-5 py-3">
-                                        <a :href="'/item-form.html?id=' + item.id" class="text-sm text-primary hover:underline">Edit</a>
+                                        <div class="flex items-center gap-2">
+                                            <a :href="'/item-form.html?id=' + item.id" class="text-sm text-primary hover:underline">Edit</a>
+                                            <button @click="openTransfer(item)" class="p-1 text-muted-foreground hover:text-primary" title="Move to another container">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><path d="M21 3l-7 7"/><polyline points="9 21 3 21 3 15"/><path d="M3 21l7-7"/></svg>
+                                            </button>
+                                            <button @click="confirmDeleteItem(item)" class="p-1 text-muted-foreground hover:text-destructive" title="Delete item">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             </template>
@@ -268,27 +280,39 @@
                 <!-- Mobile Cards -->
                 <div x-show="!loading" class="md:hidden space-y-3">
                     <template x-for="item in items" :key="item.id">
-                        <a :href="'/item-form.html?id=' + item.id" class="block bg-card rounded-lg border border-border p-4 hover:border-primary transition-colors">
+                        <div class="bg-card rounded-lg border border-border p-4">
                             <div class="flex items-start gap-3">
                                 <div x-show="item.image_url" class="w-14 h-14 rounded-lg overflow-hidden border border-border shrink-0">
                                     <img :src="item.image_url" :alt="item.name" class="w-full h-full object-cover">
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <div class="flex items-center justify-between">
-                                        <p class="text-sm font-semibold text-foreground truncate" x-text="item.name"></p>
-                                        <span class="px-2 py-0.5 text-xs font-semibold rounded-full ml-2 shrink-0"
-                                              :class="item.quantity <= (item.low_stock_threshold || 5) ? 'bg-destructive/20 text-destructive' : 'bg-secondary/20 text-secondary'"
-                                              x-text="'Qty: ' + item.quantity"></span>
-                                    </div>
-                                    <p class="text-xs text-muted-foreground mt-1" x-text="item.category"></p>
-                                    <div class="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+                                    <a :href="'/item-form.html?id=' + item.id" class="text-sm font-semibold text-foreground truncate block hover:text-primary" x-text="item.name"></a>
+                                    <p class="text-xs text-muted-foreground mt-0.5" x-text="item.category"></p>
+                                    <div class="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                                         <span x-text="item.boxes?.name"></span>
                                         <span x-show="item.boxes?.location">&middot;</span>
                                         <span x-text="item.boxes?.location"></span>
                                     </div>
                                 </div>
                             </div>
-                        </a>
+                            <div class="flex items-center justify-between mt-3 pt-3 border-t border-border">
+                                <div class="flex items-center gap-2">
+                                    <button @click="updateQty(item, -1)" class="w-8 h-8 flex items-center justify-center rounded-lg bg-muted hover:bg-muted/80 text-foreground font-bold">-</button>
+                                    <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full"
+                                          :class="item.quantity <= (item.low_stock_threshold || 5) ? 'bg-destructive/20 text-destructive' : 'bg-secondary/20 text-secondary'"
+                                          x-text="'Qty: ' + item.quantity"></span>
+                                    <button @click="updateQty(item, 1)" class="w-8 h-8 flex items-center justify-center rounded-lg bg-muted hover:bg-muted/80 text-foreground font-bold">+</button>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <button @click="openTransfer(item)" class="p-2 text-muted-foreground hover:text-primary rounded-lg" title="Move">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><path d="M21 3l-7 7"/><polyline points="9 21 3 21 3 15"/><path d="M3 21l7-7"/></svg>
+                                    </button>
+                                    <button @click="confirmDeleteItem(item)" class="p-2 text-muted-foreground hover:text-destructive rounded-lg" title="Delete">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </template>
                     <div x-show="items.length === 0 && !loading" class="text-center py-8 text-muted-foreground text-sm">
                         No items found. <a href="/item-form.html" class="text-primary hover:underline">Add your first item</a>.
@@ -302,6 +326,56 @@
                     </a>
                 </div>
             </div>
+
+            <!-- Confirmation Modal -->
+            <template x-if="_modal.show">
+                <div class="fixed inset-0 z-[9998] flex items-center justify-center p-4">
+                    <div class="fixed inset-0 bg-black/60" @click="closeModal()"></div>
+                    <div class="relative bg-card border border-border rounded-xl shadow-2xl max-w-md w-full p-6 z-10">
+                        <h3 class="text-lg font-bold text-foreground mb-2" x-text="_modal.title"></h3>
+                        <p class="text-sm text-muted-foreground mb-4" x-text="_modal.message"></p>
+                        <div class="flex gap-3 justify-end">
+                            <button @click="closeModal()" class="px-4 py-2 text-sm font-medium text-muted-foreground bg-muted rounded-lg hover:bg-muted/80">Cancel</button>
+                            <button @click="doConfirm()" class="px-4 py-2 text-sm font-medium text-white rounded-lg" :class="_modal.confirmClass" x-text="_modal.confirmText"></button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Transfer Modal -->
+            <template x-if="transferOpen">
+                <div class="fixed inset-0 z-[9998] flex items-center justify-center p-4">
+                    <div class="fixed inset-0 bg-black/60" @click="transferOpen = false"></div>
+                    <div class="relative bg-card border border-border rounded-xl shadow-2xl max-w-md w-full p-6 z-10">
+                        <h3 class="text-lg font-bold text-foreground mb-1">Move Item</h3>
+                        <p class="text-sm text-muted-foreground mb-4">Move "<span x-text="transferItem?.name"></span>" to a different container.</p>
+                        <div class="space-y-3 mb-4">
+                            <div class="relative">
+                                <label class="block text-sm font-medium text-foreground mb-1">Container</label>
+                                <input type="text" x-model="transferSearch" @input="transferContainer = transferSearch"
+                                       placeholder="Search or type container name..."
+                                       class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring">
+                                <div x-show="transferSearch && filteredTransferContainers.length > 0" class="absolute z-50 mt-1 w-full max-h-36 overflow-y-auto bg-popover border border-border rounded-lg shadow-lg">
+                                    <template x-for="c in filteredTransferContainers" :key="c">
+                                        <button type="button" @click="selectTransferContainer(c)"
+                                                class="w-full text-left px-3 py-2 text-sm hover:bg-primary hover:text-primary-foreground" x-text="c"></button>
+                                    </template>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-foreground mb-1">Location</label>
+                                <input type="text" x-model="transferLocation"
+                                       placeholder="e.g., Truck 1, Shop"
+                                       class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring">
+                            </div>
+                        </div>
+                        <div class="flex gap-3 justify-end">
+                            <button @click="transferOpen = false" class="px-4 py-2 text-sm font-medium text-muted-foreground bg-muted rounded-lg hover:bg-muted/80">Cancel</button>
+                            <button @click="doTransfer()" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:opacity-90">Move</button>
+                        </div>
+                    </div>
+                </div>
+            </template>
         </main>
     </div>
 

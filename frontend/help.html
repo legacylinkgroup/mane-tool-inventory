@@ -321,7 +321,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground transition-transform" :class="openFaq === 1 ? 'rotate-180' : ''"><polyline points="6 9 12 15 18 9"/></svg>
                             </button>
                             <div x-show="openFaq === 1" x-collapse class="px-5 pb-4">
-                                <p class="text-sm text-muted-foreground leading-relaxed">Go to <strong class="text-foreground">Inventory</strong>, click on the item, then click <strong class="text-foreground">Edit</strong>. Change the container name to the new one and save. If the new container doesn't exist, it will be created automatically.</p>
+                                <p class="text-sm text-muted-foreground leading-relaxed">On the <strong class="text-foreground">Inventory</strong> page or inside a container view, click the <strong class="text-foreground">move icon</strong> (arrows) next to any item. A popup will let you choose a new container and location. If the container doesn't exist, it will be created automatically.</p>
                             </div>
                         </div>
 
@@ -365,7 +365,18 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground transition-transform" :class="openFaq === 5 ? 'rotate-180' : ''"><polyline points="6 9 12 15 18 9"/></svg>
                             </button>
                             <div x-show="openFaq === 5" x-collapse class="px-5 pb-4">
-                                <p class="text-sm text-muted-foreground leading-relaxed">Go to the <strong class="text-foreground">Inventory</strong> page, find the item, and click the <strong class="text-foreground">Edit</strong> button on its card. You can change any field including the name, quantity, container, and category.</p>
+                                <p class="text-sm text-muted-foreground leading-relaxed">For quick quantity changes, use the <strong class="text-foreground">+ / -</strong> buttons directly on the Inventory page or container view. For full edits (name, category, container, etc.), click <strong class="text-foreground">Edit</strong> to open the item form.</p>
+                            </div>
+                        </div>
+
+                        <!-- FAQ 6 -->
+                        <div class="bg-card rounded-lg border border-border overflow-hidden">
+                            <button @click="openFaq = openFaq === 6 ? null : 6" class="w-full flex items-center justify-between px-5 py-4 text-left">
+                                <span class="font-medium text-foreground text-sm">How do I delete an item?</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground transition-transform" :class="openFaq === 6 ? 'rotate-180' : ''"><polyline points="6 9 12 15 18 9"/></svg>
+                            </button>
+                            <div x-show="openFaq === 6" x-collapse class="px-5 pb-4">
+                                <p class="text-sm text-muted-foreground leading-relaxed">On the <strong class="text-foreground">Inventory</strong> page or inside a container view, click the <strong class="text-foreground">trash icon</strong> next to any item. You'll be asked to confirm before it's permanently deleted.</p>
                             </div>
                         </div>
                     </div>

@@ -26,6 +26,8 @@ class ItemUpdate(BaseModel):
     category: Optional[str] = Field(None, min_length=1, max_length=100)
     quantity: Optional[int] = Field(None, ge=0)
     box_id: Optional[UUID4] = None
+    container_name: Optional[str] = Field(None, min_length=1, max_length=255)
+    location: Optional[str] = Field(None, min_length=1, max_length=100)
     dropbox_manual_url: Optional[str] = None
     image_url: Optional[str] = None
     brand_platform: Optional[str] = Field(None, max_length=100)

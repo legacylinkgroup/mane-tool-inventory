@@ -1,10 +1,104 @@
+// ============================================================
+// Global Toast Notification System
+// ============================================================
+function showToast(message, type = 'success', duration = 3000) {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none';
+        document.body.appendChild(container);
+    }
+
+    const colors = {
+        success: 'bg-green-600',
+        error: 'bg-red-600',
+        info: 'bg-blue-600'
+    };
+    const icons = {
+        success: `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`,
+        error: `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>`,
+        info: `<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"/></svg>`
+    };
+
+    const toast = document.createElement('div');
+    toast.className = `${colors[type] || colors.info} text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 pointer-events-auto transform translate-x-full transition-transform duration-300 max-w-sm`;
+    toast.innerHTML = `${icons[type] || icons.info}<span class="text-sm font-medium">${message}</span>`;
+    container.appendChild(toast);
+
+    requestAnimationFrame(() => {
+        toast.classList.remove('translate-x-full');
+        toast.classList.add('translate-x-0');
+    });
+
+    setTimeout(() => {
+        toast.classList.remove('translate-x-0');
+        toast.classList.add('translate-x-full');
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
+
+// ============================================================
+// Global Confirmation Modal System
+// ============================================================
+function confirmModal() {
+    return {
+        _modal: {
+            show: false,
+            title: '',
+            message: '',
+            confirmText: 'Confirm',
+            confirmClass: 'bg-red-600 hover:bg-red-700',
+            inputRequired: false,
+            inputLabel: '',
+            inputValue: '',
+            inputMatch: '',
+            onConfirm: null
+        },
+
+        openConfirmModal(title, message, callback, opts = {}) {
+            this._modal.title = title;
+            this._modal.message = message;
+            this._modal.onConfirm = callback;
+            this._modal.confirmText = opts.confirmText || 'Confirm';
+            this._modal.confirmClass = opts.confirmClass || 'bg-red-600 hover:bg-red-700';
+            this._modal.inputRequired = opts.inputRequired || false;
+            this._modal.inputLabel = opts.inputLabel || '';
+            this._modal.inputValue = '';
+            this._modal.inputMatch = opts.inputMatch || '';
+            this._modal.show = true;
+        },
+
+        closeModal() {
+            this._modal.show = false;
+            this._modal.onConfirm = null;
+        },
+
+        doConfirm() {
+            if (this._modal.inputRequired && this._modal.inputValue !== this._modal.inputMatch) {
+                showToast(`You must type exactly "${this._modal.inputMatch}" to confirm.`, 'error');
+                return;
+            }
+            if (this._modal.onConfirm) this._modal.onConfirm();
+            this._modal.show = false;
+        }
+    };
+}
+
+// Shared modal HTML template — inject via Alpine x-if
+// Each page includes the modal markup in its HTML
+
+// ============================================================
 // Dark Mode Toggle
+// ============================================================
 function toggleDarkMode() {
     document.documentElement.classList.toggle('dark');
     localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
 }
 
+// ============================================================
 // Sidebar Layout (shared across all pages with sidebar)
+// ============================================================
 function sidebarLayout() {
     return {
         sidebarOpen: false,
@@ -16,7 +110,9 @@ function sidebarLayout() {
     };
 }
 
+// ============================================================
 // Dashboard App
+// ============================================================
 function dashboardApp() {
     return {
         stats: {
@@ -43,14 +139,48 @@ function dashboardApp() {
             } finally {
                 this.loading = false;
             }
+        },
+
+        async shareRestockList() {
+            const items = this.lowStockItems;
+            if (!items.length) {
+                showToast('No low stock items to share', 'info');
+                return;
+            }
+
+            const lines = items.map(i => {
+                const need = (i.low_stock_threshold || 5) - i.quantity;
+                return `${need > 0 ? need : 1}x ${i.name}`;
+            });
+            const text = `Need to restock:\n${lines.join('\n')}`;
+
+            if (navigator.share) {
+                try {
+                    await navigator.share({ title: 'Restock List', text });
+                } catch (e) {
+                    if (e.name !== 'AbortError') {
+                        await navigator.clipboard.writeText(text);
+                        showToast('Restock list copied to clipboard', 'success');
+                    }
+                }
+            } else {
+                try {
+                    await navigator.clipboard.writeText(text);
+                    showToast('Restock list copied to clipboard', 'success');
+                } catch {
+                    showToast('Could not copy to clipboard', 'error');
+                }
+            }
         }
     };
 }
 
+// ============================================================
 // Inventory App (Alpine.js)
+// ============================================================
 function inventoryApp() {
     return {
-        // State
+        ...confirmModal(),
         items: [],
         filters: {
             locations: [],
@@ -64,13 +194,18 @@ function inventoryApp() {
         total: 0,
         loading: true,
 
-        // Initialize
+        // Transfer modal state
+        transferItem: null,
+        transferOpen: false,
+        transferSearch: '',
+        transferContainer: '',
+        transferLocation: '',
+
         async init() {
             await this.loadFilters();
             await this.loadItems();
         },
 
-        // Load dynamic filter options
         async loadFilters() {
             try {
                 const response = await fetch('/api/filters');
@@ -83,7 +218,6 @@ function inventoryApp() {
             }
         },
 
-        // Load items with filters
         async loadItems() {
             this.loading = true;
             try {
@@ -103,26 +237,120 @@ function inventoryApp() {
                 }
             } catch (error) {
                 console.error('Failed to load items:', error);
-                alert('Failed to load inventory. Please try again.');
+                showToast('Failed to load inventory. Please try again.', 'error');
             } finally {
                 this.loading = false;
             }
         },
 
-        // Clear all filters
         clearFilters() {
             this.search = '';
             this.location = '';
             this.container = '';
             this.category = '';
             this.loadItems();
+        },
+
+        confirmDeleteItem(item) {
+            this.openConfirmModal(
+                'Delete Item',
+                `Are you sure you want to delete "${item.name}"? This cannot be undone.`,
+                () => this.deleteItem(item.id)
+            );
+        },
+
+        async deleteItem(itemId) {
+            try {
+                const response = await fetch(`/api/item/${itemId}`, { method: 'DELETE' });
+                const data = await response.json();
+                if (data.success) {
+                    this.items = this.items.filter(i => i.id !== itemId);
+                    this.total = Math.max(0, this.total - 1);
+                    showToast('Item deleted', 'success');
+                } else {
+                    showToast('Failed to delete item', 'error');
+                }
+            } catch (error) {
+                showToast('Failed to delete item: ' + error.message, 'error');
+            }
+        },
+
+        async updateQty(item, delta) {
+            const newQty = Math.max(0, item.quantity + delta);
+            const oldQty = item.quantity;
+            item.quantity = newQty;
+
+            try {
+                const response = await fetch(`/api/item/${item.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ quantity: newQty })
+                });
+                const data = await response.json();
+                if (!data.success) {
+                    item.quantity = oldQty;
+                    showToast('Failed to update quantity', 'error');
+                }
+            } catch (error) {
+                item.quantity = oldQty;
+                showToast('Failed to update quantity', 'error');
+            }
+        },
+
+        openTransfer(item) {
+            this.transferItem = item;
+            this.transferSearch = '';
+            this.transferContainer = '';
+            this.transferLocation = '';
+            this.transferOpen = true;
+        },
+
+        get filteredTransferContainers() {
+            const boxes = this.filters.containers || [];
+            if (!this.transferSearch) return boxes;
+            return boxes.filter(c => c.toLowerCase().includes(this.transferSearch.toLowerCase()));
+        },
+
+        selectTransferContainer(name) {
+            this.transferContainer = name;
+            this.transferSearch = name;
+        },
+
+        async doTransfer() {
+            if (!this.transferContainer || !this.transferLocation) {
+                showToast('Select a container and enter a location', 'error');
+                return;
+            }
+            try {
+                const response = await fetch(`/api/item/${this.transferItem.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        container_name: this.transferContainer,
+                        location: this.transferLocation
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast(`Moved "${this.transferItem.name}" to ${this.transferContainer}`, 'success');
+                    this.transferOpen = false;
+                    await this.loadItems();
+                } else {
+                    showToast('Transfer failed', 'error');
+                }
+            } catch (error) {
+                showToast('Transfer failed: ' + error.message, 'error');
+            }
         }
     };
 }
 
+// ============================================================
 // Admin App
+// ============================================================
 function adminApp() {
     return {
+        ...confirmModal(),
         uploading: false,
         uploadResult: null,
 
@@ -171,41 +399,58 @@ function adminApp() {
         async exportCSV() {
             try {
                 const response = await fetch('/api/export');
-                if (!response.ok) { alert('Export failed'); return; }
+                if (!response.ok) {
+                    showToast('Export failed', 'error');
+                    return;
+                }
                 const blob = await response.blob();
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url; a.download = 'inventory_export.csv'; a.click();
                 URL.revokeObjectURL(url);
+                showToast('Export downloaded', 'success');
             } catch (error) {
-                alert('Export failed: ' + error.message);
+                showToast('Export failed: ' + error.message, 'error');
             }
         },
 
         async downloadQR() {
             try {
                 const response = await fetch('/api/qr/download');
-                if (!response.ok) { alert('QR download failed'); return; }
+                if (!response.ok) {
+                    showToast('QR download failed', 'error');
+                    return;
+                }
                 const blob = await response.blob();
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url; a.download = 'qr_codes.pdf'; a.click();
                 URL.revokeObjectURL(url);
+                showToast('QR codes downloaded', 'success');
             } catch (error) {
-                alert('QR download failed: ' + error.message);
+                showToast('QR download failed: ' + error.message, 'error');
             }
         },
 
         wiping: false,
         wipeResult: null,
 
-        async wipeDatabase() {
-            const confirmation = prompt('This will permanently delete ALL items and containers.\n\nType WIPE to confirm:');
-            if (confirmation !== 'WIPE') {
-                if (confirmation !== null) alert('Wipe cancelled. You must type exactly "WIPE" to confirm.');
-                return;
-            }
+        startWipe() {
+            this.openConfirmModal(
+                'Wipe Database',
+                'This will permanently delete ALL items and containers. This cannot be undone.',
+                () => this.doWipe(),
+                {
+                    confirmText: 'Wipe Everything',
+                    confirmClass: 'bg-red-600 hover:bg-red-700',
+                    inputRequired: true,
+                    inputLabel: 'Type WIPE to confirm',
+                    inputMatch: 'WIPE'
+                }
+            );
+        },
 
+        async doWipe() {
             this.wiping = true;
             this.wipeResult = null;
 
@@ -219,12 +464,15 @@ function adminApp() {
 
                 if (data.success) {
                     this.wipeResult = { success: true, message: data.message };
+                    showToast('Database wiped successfully', 'success');
                     setTimeout(() => window.location.href = '/', 2000);
                 } else {
                     this.wipeResult = { success: false, message: 'Wipe failed: ' + (data.detail || 'Unknown error') };
+                    showToast('Wipe failed', 'error');
                 }
             } catch (error) {
                 this.wipeResult = { success: false, message: 'Wipe failed: ' + error.message };
+                showToast('Wipe failed: ' + error.message, 'error');
             } finally {
                 this.wiping = false;
             }
@@ -232,7 +480,9 @@ function adminApp() {
     };
 }
 
+// ============================================================
 // Item Form App
+// ============================================================
 function itemFormApp() {
     return {
         item: {
@@ -257,7 +507,6 @@ function itemFormApp() {
         isEditMode: false,
         itemId: null,
 
-        // Combobox state
         comboboxState: {
             location: { open: false, search: '' },
             container_name: { open: false, search: '' },
@@ -314,7 +563,7 @@ function itemFormApp() {
                 const response = await fetch(`/api/item/${this.itemId}`);
                 const data = await response.json();
                 if (!data.success || !data.data) {
-                    alert('Could not load item. Please try again.');
+                    showToast('Could not load item. Please try again.', 'error');
                     return;
                 }
                 const item = data.data;
@@ -334,13 +583,12 @@ function itemFormApp() {
                     };
                     this.imagePreview = item.image_url;
 
-                    // Sync combobox search fields
                     this.comboboxState.location.search = this.item.location;
                     this.comboboxState.container_name.search = this.item.container_name;
                     this.comboboxState.category.search = this.item.category;
                 }
             } catch (error) {
-                alert('Failed to load item: ' + error.message);
+                showToast('Failed to load item: ' + error.message, 'error');
             }
         },
 
@@ -395,7 +643,7 @@ function itemFormApp() {
 
         async saveItem() {
             if (!this.item.name || !this.item.category || this.item.quantity < 0 || !this.item.container_name || !this.item.location) {
-                alert('Please fill in all required fields (Name, Category, Quantity, Location, Container Name)');
+                showToast('Please fill in all required fields (Name, Category, Quantity, Location, Container)', 'error');
                 return;
             }
 
@@ -424,13 +672,13 @@ function itemFormApp() {
                         await this.uploadImage();
                     }
 
-                    alert(this.isEditMode ? 'Item updated successfully!' : 'Item created successfully!');
-                    window.location.href = '/inventory.html';
+                    showToast(this.isEditMode ? 'Item updated successfully!' : 'Item created successfully!', 'success');
+                    setTimeout(() => { window.location.href = '/inventory.html'; }, 800);
                 } else {
-                    alert('Failed to save item: ' + (data.detail || 'Unknown error'));
+                    showToast('Failed to save item: ' + (data.detail || 'Unknown error'), 'error');
                 }
             } catch (error) {
-                alert('Failed to save item: ' + error.message);
+                showToast('Failed to save item: ' + error.message, 'error');
             } finally {
                 this.saving = false;
             }
@@ -438,7 +686,9 @@ function itemFormApp() {
     };
 }
 
+// ============================================================
 // Containers App
+// ============================================================
 function containersApp() {
     return {
         boxes: [],

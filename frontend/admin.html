@@ -278,7 +278,7 @@
                     </div>
 
                     <button
-                        @click="wipeDatabase()"
+                        @click="startWipe()"
                         :disabled="wiping"
                         class="px-6 py-3 bg-destructive text-destructive-foreground rounded-lg hover:opacity-90 font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
@@ -288,6 +288,29 @@
                 </div>
             </div>
         </main>
+
+        <!-- Confirmation Modal -->
+        <template x-if="_modal.show">
+            <div class="fixed inset-0 z-[9998] flex items-center justify-center p-4">
+                <div class="fixed inset-0 bg-black/60" @click="closeModal()"></div>
+                <div class="relative bg-card border border-border rounded-xl shadow-2xl max-w-md w-full p-6 z-10">
+                    <h3 class="text-lg font-bold text-foreground mb-2" x-text="_modal.title"></h3>
+                    <p class="text-sm text-muted-foreground mb-4" x-text="_modal.message"></p>
+                    <template x-if="_modal.inputRequired">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-foreground mb-1" x-text="_modal.inputLabel"></label>
+                            <input type="text" x-model="_modal.inputValue"
+                                   class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring"
+                                   @keydown.enter="doConfirm()">
+                        </div>
+                    </template>
+                    <div class="flex gap-3 justify-end">
+                        <button @click="closeModal()" class="px-4 py-2 text-sm font-medium text-muted-foreground bg-muted rounded-lg hover:bg-muted/80">Cancel</button>
+                        <button @click="doConfirm()" class="px-4 py-2 text-sm font-medium text-white rounded-lg" :class="_modal.confirmClass" x-text="_modal.confirmText"></button>
+                    </div>
+                </div>
+            </div>
+        </template>
     </div>
 
     <script src="/js/app.js"></script>

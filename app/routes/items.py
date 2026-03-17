@@ -224,6 +224,13 @@ async def update_item(
         if not update_data:
             raise HTTPException(status_code=400, detail="No fields to update")
 
+        # If container_name and location provided, resolve to box_id
+        container_name = update_data.pop('container_name', None)
+        location = update_data.pop('location', None)
+        if container_name and location:
+            box_id = await _get_or_create_box(db, container_name, location)
+            update_data['box_id'] = str(box_id)
+
         update_data = serialize_for_supabase(update_data)
 
         result = db.table('items').update(update_data).eq('id', item_id).execute()
@@ -238,6 +245,28 @@ async def update_item(
     except Exception as e:
         logger.error(f"Error updating item {item_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Error updating item: {str(e)}")
+
+
+@router.delete("/item/{item_id}", summary="Delete an item")
+async def delete_item(
+    item_id: str = Path(..., description="Item UUID"),
+    db: Client = Depends(get_supabase_client)
+):
+    """Delete an item by its UUID."""
+    try:
+        existing = db.table('items').select('id').eq('id', item_id).execute()
+        if not existing.data:
+            raise HTTPException(status_code=404, detail="Item not found")
+
+        db.table('items').delete().eq('id', item_id).execute()
+
+        return {"success": True, "message": "Item deleted"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting item {item_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error deleting item: {str(e)}")
 
 
 async def _get_or_create_box(db: Client, container_name: str, location: str) -> str:
