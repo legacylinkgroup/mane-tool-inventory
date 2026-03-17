@@ -313,7 +313,7 @@
                             <!-- Actions -->
                             <div class="mt-3 flex items-center justify-between">
                                 <p class="text-xs text-muted-foreground">
-                                    Updated: <span x-text="new Date(item.last_updated).toLocaleDateString()"></span>
+                                    Updated: <span x-text="new Date(item.updated_at).toLocaleDateString()"></span>
                                 </p>
                                 <div class="flex items-center gap-1">
                                     <a :href="'/item-form.html?id=' + item.id" class="p-1.5 text-muted-foreground hover:text-primary rounded" title="Edit">

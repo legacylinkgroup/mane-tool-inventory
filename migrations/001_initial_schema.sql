@@ -26,7 +26,7 @@ CREATE TABLE items (
     serial_number VARCHAR(100),
     estimated_value DECIMAL(10,2),
     low_stock_threshold INTEGER DEFAULT 5,
-    last_updated TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
     created_at TIMESTAMP DEFAULT NOW(),
     UNIQUE (name, box_id) -- Composite unique constraint for merge strategy
 );
@@ -40,28 +40,33 @@ CREATE INDEX idx_items_category ON items(category);
 CREATE INDEX idx_items_name ON items(name);
 CREATE INDEX idx_items_name_trgm ON items USING GIN (name gin_trgm_ops); -- Fuzzy search
 
--- Create trigger to auto-update last_updated timestamp
-CREATE OR REPLACE FUNCTION update_last_updated()
+-- Create trigger to auto-update items updated_at timestamp
+CREATE OR REPLACE FUNCTION update_items_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.last_updated = NOW();
+    NEW.updated_at = NOW();
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trigger_update_items_last_updated
+CREATE TRIGGER trigger_update_items_updated_at
 BEFORE UPDATE ON items
 FOR EACH ROW
-WHEN (OLD.quantity IS DISTINCT FROM NEW.quantity OR
-      OLD.name IS DISTINCT FROM NEW.name OR
-      OLD.category IS DISTINCT FROM NEW.category)
-EXECUTE FUNCTION update_last_updated();
+EXECUTE FUNCTION update_items_updated_at();
 
 -- Create trigger to auto-update boxes updated_at
+CREATE OR REPLACE FUNCTION update_boxes_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE TRIGGER trigger_update_boxes_updated_at
 BEFORE UPDATE ON boxes
 FOR EACH ROW
-EXECUTE FUNCTION update_last_updated();
+EXECUTE FUNCTION update_boxes_updated_at();
 
 -- Create Supabase Storage buckets (run in Supabase SQL Editor or via API)
 -- INSERT INTO storage.buckets (id, name, public) VALUES ('tool-images', 'tool-images', true);

@@ -38,7 +38,7 @@ class ItemUpdate(BaseModel):
 class Item(ItemBase):
     """Complete item model (returned from database)."""
     id: UUID4
-    last_updated: datetime
+    updated_at: datetime
     created_at: datetime
 
     class Config:

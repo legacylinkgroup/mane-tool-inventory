@@ -236,7 +236,7 @@
                                                       x-text="item.quantity"></span>
                                             </td>
                                             <td class="px-5 py-3 text-sm text-muted-foreground hidden md:table-cell" x-text="item.boxes?.name"></td>
-                                            <td class="px-5 py-3 text-sm text-muted-foreground hidden md:table-cell" x-text="item.last_updated ? new Date(item.last_updated).toLocaleDateString() : '-'"></td>
+                                            <td class="px-5 py-3 text-sm text-muted-foreground hidden md:table-cell" x-text="item.updated_at ? new Date(item.updated_at).toLocaleDateString() : '-'"></td>
                                         </tr>
                                     </template>
                                     <tr x-show="recentItems.length === 0">

@@ -30,10 +30,10 @@ async def get_dashboard(db: Client = Depends(get_supabase_client)):
             if item.get('estimated_value') is not None
         )
 
-        # Recent items (top 5 by last_updated)
+        # Recent items (top 5 by updated_at)
         sorted_items = sorted(
             items,
-            key=lambda x: x.get('last_updated', '') or '',
+            key=lambda x: x.get('updated_at', '') or '',
             reverse=True
         )
         recent_items = sorted_items[:5]

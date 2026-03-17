@@ -60,7 +60,7 @@ async def export_inventory(db: Client = Depends(get_supabase_client)):
                 item.get('estimated_value', ''),
                 item.get('dropbox_manual_url', ''),
                 item.get('image_url', ''),
-                item.get('last_updated', '')
+                item.get('updated_at', '')
             ])
 
         # Prepare response
