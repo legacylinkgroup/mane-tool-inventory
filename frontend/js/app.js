@@ -270,10 +270,8 @@ function inventoryApp() {
         // Transfer modal state
         transferItem: null,
         transferOpen: false,
-        transferSearch: '',
         transferContainer: '',
         transferLocation: '',
-        transferLocationSearch: '',
 
         async init() {
             document.addEventListener('pullrefresh', () => this.loadItems());
@@ -374,33 +372,9 @@ function inventoryApp() {
 
         openTransfer(item) {
             this.transferItem = item;
-            this.transferSearch = '';
             this.transferContainer = '';
             this.transferLocation = '';
-            this.transferLocationSearch = '';
             this.transferOpen = true;
-        },
-
-        get filteredTransferLocations() {
-            const locs = this.filters.locations || [];
-            if (!this.transferLocationSearch) return locs;
-            return locs.filter(l => l.toLowerCase().includes(this.transferLocationSearch.toLowerCase()));
-        },
-
-        selectTransferLocation(loc) {
-            this.transferLocation = loc;
-            this.transferLocationSearch = loc;
-        },
-
-        get filteredTransferContainers() {
-            const boxes = this.filters.containers || [];
-            if (!this.transferSearch) return boxes;
-            return boxes.filter(c => c.toLowerCase().includes(this.transferSearch.toLowerCase()));
-        },
-
-        selectTransferContainer(name) {
-            this.transferContainer = name;
-            this.transferSearch = name;
         },
 
         async doTransfer() {
