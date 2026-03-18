@@ -272,6 +272,10 @@ function inventoryApp() {
         transferOpen: false,
         transferContainer: '',
         transferLocation: '',
+        transferLocationSearch: '',
+        transferLocationOpen: false,
+        transferContainerSearch: '',
+        transferContainerOpen: false,
 
         async init() {
             document.addEventListener('pullrefresh', () => this.loadItems());
@@ -374,7 +378,30 @@ function inventoryApp() {
             this.transferItem = item;
             this.transferContainer = '';
             this.transferLocation = '';
+            this.transferLocationSearch = '';
+            this.transferLocationOpen = false;
+            this.transferContainerSearch = '';
+            this.transferContainerOpen = false;
             this.transferOpen = true;
+        },
+
+        filteredTransferLocations() {
+            const q = this.transferLocationSearch.toLowerCase();
+            return this.filters.locations.filter(l => l.toLowerCase().includes(q));
+        },
+        selectTransferLocation(loc) {
+            this.transferLocation = loc;
+            this.transferLocationSearch = loc;
+            this.transferLocationOpen = false;
+        },
+        filteredTransferContainers() {
+            const q = this.transferContainerSearch.toLowerCase();
+            return this.filters.containers.filter(c => c.toLowerCase().includes(q));
+        },
+        selectTransferContainer(name) {
+            this.transferContainer = name;
+            this.transferContainerSearch = name;
+            this.transferContainerOpen = false;
         },
 
         async doTransfer() {

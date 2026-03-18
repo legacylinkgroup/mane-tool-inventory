@@ -263,7 +263,7 @@
                                         </div>
                                     </td>
                                     <td class="px-5 py-3 text-sm">
-                                        <a :href="'/box.html?id=' + item.boxes?.id" x-text="item.boxes?.name"
+                                        <a :href="'/box/' + item.boxes?.id" x-text="item.boxes?.name"
                                            class="text-muted-foreground hover:text-primary hover:underline transition-colors"></a>
                                     </td>
                                     <td class="px-5 py-3 text-sm text-muted-foreground" x-text="item.boxes?.location"></td>
@@ -301,7 +301,7 @@
                                     class="w-full flex items-center gap-3 px-4 py-3 text-left">
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm font-medium text-foreground truncate" x-text="item.name"></p>
-                                    <a x-show="item.boxes?.id" :href="'/box.html?id=' + item.boxes?.id" @click.stop
+                                    <a x-show="item.boxes?.id" :href="'/box/' + item.boxes?.id" @click.stop
                                        class="text-xs text-muted-foreground truncate hover:text-primary hover:underline transition-colors"
                                        x-text="item.boxes?.name"></a>
                                     <span x-show="!item.boxes?.id" class="text-xs text-muted-foreground truncate" x-text="item.category"></span>
@@ -375,31 +375,62 @@
                         <h3 class="text-lg font-bold text-foreground mb-1">Move Item</h3>
                         <p class="text-sm text-muted-foreground mb-4">Move "<span x-text="transferItem?.name"></span>" to a different container.</p>
                         <div class="space-y-3 mb-4">
-                            <!-- Datalists populated from filters -->
-                            <datalist id="modal-locations-list">
-                                <template x-for="loc in filters.locations" :key="loc">
-                                    <option :value="loc"></option>
-                                </template>
-                            </datalist>
-                            <datalist id="modal-containers-list">
-                                <template x-for="c in filters.containers" :key="c">
-                                    <option :value="c"></option>
-                                </template>
-                            </datalist>
-
-                            <div>
+                            <!-- Location combobox -->
+                            <div class="relative" @click.outside="transferLocationOpen = false">
                                 <label class="block text-sm font-medium text-foreground mb-1">Location</label>
-                                <input type="text" x-model="transferLocation"
-                                       list="modal-locations-list"
-                                       placeholder="e.g., Truck 1, Shop"
-                                       class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring">
+                                <div class="relative">
+                                    <input type="text" x-model="transferLocationSearch"
+                                           @input="transferLocationOpen = true"
+                                           @focus="transferLocationOpen = true"
+                                           @keydown.escape="transferLocationOpen = false"
+                                           placeholder="e.g., Truck 1, Shop"
+                                           autocomplete="off"
+                                           class="w-full px-3 py-2 pr-10 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring">
+                                    <button type="button" @click="transferLocationOpen = !transferLocationOpen"
+                                            class="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground">
+                                        <svg class="w-4 h-4 transition-transform" :class="transferLocationOpen && 'rotate-180'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                                    </button>
+                                </div>
+                                <div x-show="transferLocationOpen && filteredTransferLocations().length > 0"
+                                     x-transition:enter="transition ease-out duration-100"
+                                     x-transition:enter-start="opacity-0 scale-95"
+                                     x-transition:enter-end="opacity-100 scale-100"
+                                     class="absolute z-[9999] mt-1 w-full max-h-48 overflow-y-auto bg-popover border border-border rounded-lg shadow-lg">
+                                    <template x-for="loc in filteredTransferLocations()" :key="loc">
+                                        <button type="button" @click="selectTransferLocation(loc)"
+                                                class="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-accent"
+                                                x-text="loc"></button>
+                                    </template>
+                                </div>
                             </div>
-                            <div>
+
+                            <!-- Container combobox -->
+                            <div class="relative" @click.outside="transferContainerOpen = false">
                                 <label class="block text-sm font-medium text-foreground mb-1">Container</label>
-                                <input type="text" x-model="transferContainer"
-                                       list="modal-containers-list"
-                                       placeholder="Search or type container name..."
-                                       class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring">
+                                <div class="relative">
+                                    <input type="text" x-model="transferContainerSearch"
+                                           @input="transferContainerOpen = true"
+                                           @focus="transferContainerOpen = true"
+                                           @keydown.escape="transferContainerOpen = false"
+                                           placeholder="Search or type container name..."
+                                           autocomplete="off"
+                                           class="w-full px-3 py-2 pr-10 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring">
+                                    <button type="button" @click="transferContainerOpen = !transferContainerOpen"
+                                            class="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground">
+                                        <svg class="w-4 h-4 transition-transform" :class="transferContainerOpen && 'rotate-180'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                                    </button>
+                                </div>
+                                <div x-show="transferContainerOpen && filteredTransferContainers().length > 0"
+                                     x-transition:enter="transition ease-out duration-100"
+                                     x-transition:enter-start="opacity-0 scale-95"
+                                     x-transition:enter-end="opacity-100 scale-100"
+                                     class="absolute z-[9999] mt-1 w-full max-h-48 overflow-y-auto bg-popover border border-border rounded-lg shadow-lg">
+                                    <template x-for="c in filteredTransferContainers()" :key="c">
+                                        <button type="button" @click="selectTransferContainer(c)"
+                                                class="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-accent"
+                                                x-text="c"></button>
+                                    </template>
+                                </div>
                             </div>
                         </div>
                         <div class="flex gap-3 justify-end">
