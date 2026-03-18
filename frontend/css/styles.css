@@ -175,6 +175,11 @@ input[type="file"]::file-selector-button {
     }
 }
 
+/* ===== Pull-to-Refresh ===== */
+#pull-refresh-indicator {
+    transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+}
+
 /* ===== Custom shadow using theme variables ===== */
 .theme-shadow {
     box-shadow: var(--shadow-offset-x) var(--shadow-offset-y) var(--shadow-blur) var(--shadow-spread) rgba(0, 0, 0, var(--shadow-opacity));

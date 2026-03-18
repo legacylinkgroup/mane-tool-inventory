@@ -25,7 +25,7 @@ class ItemCreateRequest(BaseModel):
     brand_platform: Optional[str] = Field(None, max_length=100)
     serial_number: Optional[str] = Field(None, max_length=100)
     estimated_value: Optional[Decimal] = Field(None, ge=0)
-    low_stock_threshold: int = Field(default=5, ge=0)
+    low_stock_threshold: int = Field(default=0, ge=0)
 
 
 @router.get("/items", summary="Search and filter items")
@@ -78,7 +78,8 @@ async def get_items(
         total = count_result.count if count_result.count is not None else len(items)
 
         for item in items:
-            item['low_stock'] = item['quantity'] <= item.get('low_stock_threshold', 5)
+            threshold = item.get('low_stock_threshold', 0)
+            item['low_stock'] = threshold > 0 and item['quantity'] < threshold
 
         return jsonable_encoder({
             "success": True,

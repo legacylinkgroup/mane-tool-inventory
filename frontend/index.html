@@ -71,6 +71,12 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body class="bg-background text-foreground min-h-screen font-sans">
+    <div id="pull-refresh-indicator" class="hidden fixed top-0 left-0 right-0 z-[9999] flex items-center justify-center py-3 pointer-events-none" style="transform: translateY(0); opacity: 0;">
+        <div class="bg-card border border-border rounded-full p-2 shadow-lg">
+            <svg class="ptr-arrow w-5 h-5 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 13 12 18 17 13"/><line x1="12" y1="6" x2="12" y2="18"/></svg>
+            <div class="ptr-spinner hidden animate-spin w-5 h-5 border-2 border-primary border-t-transparent rounded-full"></div>
+        </div>
+    </div>
     <div x-data="{ ...sidebarLayout(), ...dashboardApp() }" x-init="init()" class="min-h-screen flex">
 
         <!-- Mobile Overlay -->
@@ -213,33 +219,49 @@
                             <h2 class="text-lg font-semibold text-foreground">Recent Items</h2>
                             <a href="/inventory.html" class="text-sm text-primary hover:underline">View all</a>
                         </div>
-                        <div class="overflow-x-auto">
+                        <!-- Mobile Recent Items List -->
+                        <div class="md:hidden divide-y divide-border">
+                            <template x-for="item in recentItems" :key="item.id">
+                                <div class="flex items-center justify-between px-4 py-3">
+                                    <div class="flex-1 min-w-0 mr-3">
+                                        <p class="text-sm font-medium text-foreground truncate" x-text="item.name"></p>
+                                        <p class="text-xs text-muted-foreground" x-text="item.category"></p>
+                                    </div>
+                                    <span class="px-2 py-0.5 text-xs font-semibold rounded-full shrink-0"
+                                          :class="(item.low_stock_threshold > 0 && item.quantity < item.low_stock_threshold) ? 'bg-destructive/20 text-destructive' : 'bg-secondary/20 text-secondary'"
+                                          x-text="item.quantity"></span>
+                                </div>
+                            </template>
+                            <div x-show="recentItems.length === 0" class="px-4 py-8 text-center text-muted-foreground text-sm">
+                                No items yet. <a href="/item-form.html" class="text-primary hover:underline">Add your first item</a>.
+                            </div>
+                        </div>
+                        <!-- Desktop Recent Items Table -->
+                        <div class="hidden md:block overflow-x-auto">
                             <table class="w-full">
                                 <thead>
                                     <tr class="border-b border-border">
-                                        <th class="px-3 md:px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Name</th>
-                                        <th class="px-3 md:px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider hidden sm:table-cell">Category</th>
-                                        <th class="px-3 md:px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Qty</th>
-                                        <th class="px-3 md:px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider hidden md:table-cell">Container</th>
-                                        <th class="px-3 md:px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider hidden md:table-cell">Updated</th>
+                                        <th class="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Name</th>
+                                        <th class="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Category</th>
+                                        <th class="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Qty</th>
+                                        <th class="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Container</th>
+                                        <th class="px-5 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Updated</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-border">
                                     <template x-for="item in recentItems" :key="item.id">
                                         <tr class="hover:bg-muted/50 transition-colors">
-                                            <td class="px-3 md:px-5 py-3">
+                                            <td class="px-5 py-3">
                                                 <div class="text-sm font-medium text-foreground" x-text="item.name"></div>
-                                                <div class="text-xs text-muted-foreground sm:hidden" x-text="item.category"></div>
-                                                <div class="text-xs text-muted-foreground md:hidden" x-text="item.boxes?.name"></div>
                                             </td>
-                                            <td class="px-3 md:px-5 py-3 text-sm text-muted-foreground hidden sm:table-cell" x-text="item.category"></td>
-                                            <td class="px-3 md:px-5 py-3">
+                                            <td class="px-5 py-3 text-sm text-muted-foreground" x-text="item.category"></td>
+                                            <td class="px-5 py-3">
                                                 <span class="px-2 py-0.5 text-xs font-semibold rounded-full"
-                                                      :class="item.quantity <= (item.low_stock_threshold || 5) ? 'bg-destructive/20 text-destructive' : 'bg-secondary/20 text-secondary'"
+                                                      :class="(item.low_stock_threshold > 0 && item.quantity < item.low_stock_threshold) ? 'bg-destructive/20 text-destructive' : 'bg-secondary/20 text-secondary'"
                                                       x-text="item.quantity"></span>
                                             </td>
-                                            <td class="px-3 md:px-5 py-3 text-sm text-muted-foreground hidden md:table-cell" x-text="item.boxes?.name"></td>
-                                            <td class="px-3 md:px-5 py-3 text-sm text-muted-foreground hidden md:table-cell" x-text="item.updated_at ? new Date(item.updated_at).toLocaleDateString() : '-'"></td>
+                                            <td class="px-5 py-3 text-sm text-muted-foreground" x-text="item.boxes?.name"></td>
+                                            <td class="px-5 py-3 text-sm text-muted-foreground" x-text="item.updated_at ? new Date(item.updated_at).toLocaleDateString() : '-'"></td>
                                         </tr>
                                     </template>
                                     <tr x-show="recentItems.length === 0">
@@ -268,16 +290,16 @@
                         </div>
                         <div x-show="lowStockItems.length > 0" class="divide-y divide-border">
                             <template x-for="item in lowStockItems" :key="item.id">
-                                <div class="flex flex-wrap items-center justify-between px-3 md:px-5 py-3 hover:bg-muted/50 transition-colors gap-1">
-                                    <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors">
+                                    <div class="flex-1 min-w-0 mr-3">
                                         <p class="text-sm font-medium text-foreground truncate" x-text="item.name"></p>
                                         <p class="text-xs text-muted-foreground" x-text="item.boxes?.name || 'Unknown container'"></p>
                                     </div>
-                                    <div class="flex items-center gap-3">
+                                    <div class="flex items-center gap-2 shrink-0">
                                         <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-destructive/20 text-destructive">
-                                            <span x-text="item.quantity"></span> / <span x-text="item.low_stock_threshold || 5"></span>
+                                            <span x-text="item.quantity"></span>/<span x-text="item.low_stock_threshold || 0"></span>
                                         </span>
-                                        <a :href="'/item-form.html?id=' + item.id" class="text-xs text-primary hover:underline">Restock</a>
+                                        <a :href="'/item-form.html?id=' + item.id" class="text-xs text-primary hover:underline whitespace-nowrap">Restock</a>
                                     </div>
                                 </div>
                             </template>

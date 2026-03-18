@@ -13,7 +13,7 @@ def test_item_create_model(sample_item_data):
     item = ItemCreate(**sample_item_data)
     assert item.name == "Test Wire Stripper"
     assert item.quantity == 5
-    assert item.low_stock_threshold == 5  # Default value
+    assert item.low_stock_threshold == 0  # Default value (0 = disabled)
 
 def test_item_quantity_validation():
     """Test that negative quantity raises validation error."""

@@ -24,7 +24,8 @@ async def get_containers(
             items = box.get('items', [])
             box['item_count'] = len(items)
             for item in items:
-                item['low_stock'] = item['quantity'] <= item.get('low_stock_threshold', 5)
+                threshold = item.get('low_stock_threshold', 0)
+                item['low_stock'] = threshold > 0 and item['quantity'] < threshold
 
         return jsonable_encoder({
             "success": True,
@@ -91,7 +92,8 @@ async def get_box(
 
         # Add low_stock flag to each item
         for item in items:
-            item['low_stock'] = item['quantity'] < item.get('low_stock_threshold', 5)
+            threshold = item.get('low_stock_threshold', 0)
+            item['low_stock'] = threshold > 0 and item['quantity'] < threshold
 
         return jsonable_encoder({
             "success": True,

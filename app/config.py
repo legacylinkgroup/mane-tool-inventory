@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     # Application
     environment: str = "development"
     max_image_size_mb: int = 5
-    low_stock_threshold_default: int = 5
+    low_stock_threshold_default: int = 0
     allowed_origins: str = "*"  # Comma-separated list or "*"
 
     # Vercel (optional for local dev)

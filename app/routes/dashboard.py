@@ -39,10 +39,11 @@ async def get_dashboard(db: Client = Depends(get_supabase_client)):
         )
         recent_items = sorted_items[:5]
 
-        # Low stock items
+        # Low stock items (threshold=0 means disabled)
         low_stock_items = [
             item for item in items
-            if item.get('quantity', 0) <= item.get('low_stock_threshold', 5)
+            if item.get('low_stock_threshold', 0) > 0
+            and item.get('quantity', 0) < item.get('low_stock_threshold', 0)
         ]
 
         return jsonable_encoder({

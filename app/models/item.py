@@ -14,7 +14,7 @@ class ItemBase(BaseModel):
     brand_platform: Optional[str] = Field(None, max_length=100)
     serial_number: Optional[str] = Field(None, max_length=100)
     estimated_value: Optional[Decimal] = Field(None, ge=0, decimal_places=2)
-    low_stock_threshold: int = Field(default=5, ge=0)
+    low_stock_threshold: int = Field(default=0, ge=0)
 
 class ItemCreate(ItemBase):
     """Model for creating a new item."""

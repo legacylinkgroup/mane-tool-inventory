@@ -1,4 +1,76 @@
 // ============================================================
+// Pull-to-Refresh (PWA)
+// ============================================================
+function initPullToRefresh() {
+    let startY = 0;
+    let pulling = false;
+    const threshold = 80;
+    let indicator = null;
+
+    function getIndicator() {
+        if (!indicator) {
+            indicator = document.getElementById('pull-refresh-indicator');
+        }
+        return indicator;
+    }
+
+    function resetIndicator(el) {
+        el.style.transform = 'translateY(0)';
+        el.style.opacity = '0';
+        setTimeout(() => {
+            el.classList.add('hidden');
+            const spinner = el.querySelector('.ptr-spinner');
+            const arrow = el.querySelector('.ptr-arrow');
+            if (spinner) spinner.classList.add('hidden');
+            if (arrow) arrow.classList.remove('hidden');
+        }, 200);
+    }
+
+    document.addEventListener('touchstart', (e) => {
+        if (window.scrollY === 0) {
+            startY = e.touches[0].clientY;
+            pulling = true;
+        }
+    }, { passive: true });
+
+    document.addEventListener('touchmove', (e) => {
+        if (!pulling) return;
+        const el = getIndicator();
+        if (!el) return;
+
+        const deltaY = e.touches[0].clientY - startY;
+        if (deltaY > 0 && window.scrollY === 0) {
+            const progress = Math.min(deltaY / threshold, 1);
+            el.style.transform = `translateY(${Math.min(deltaY * 0.4, 60)}px)`;
+            el.style.opacity = progress;
+            el.classList.remove('hidden');
+        }
+    }, { passive: true });
+
+    document.addEventListener('touchend', () => {
+        if (!pulling) return;
+        pulling = false;
+        const el = getIndicator();
+        if (!el) return;
+
+        const currentTranslate = parseFloat(el.style.transform.replace(/[^0-9.-]/g, '')) || 0;
+        if (currentTranslate >= threshold * 0.4) {
+            el.style.transform = 'translateY(40px)';
+            el.querySelector('.ptr-spinner').classList.remove('hidden');
+            el.querySelector('.ptr-arrow').classList.add('hidden');
+
+            document.dispatchEvent(new CustomEvent('pullrefresh'));
+
+            setTimeout(() => resetIndicator(el), 800);
+        } else {
+            resetIndicator(el);
+        }
+    }, { passive: true });
+}
+
+document.addEventListener('DOMContentLoaded', initPullToRefresh);
+
+// ============================================================
 // Global Toast Notification System
 // ============================================================
 function showToast(message, type = 'success', duration = 3000) {
@@ -126,6 +198,7 @@ function dashboardApp() {
         loading: true,
 
         async init() {
+            document.addEventListener('pullrefresh', () => this.init());
             try {
                 const response = await fetch('/api/dashboard');
                 const data = await response.json();
@@ -149,7 +222,7 @@ function dashboardApp() {
             }
 
             const lines = items.map(i => {
-                const need = (i.low_stock_threshold || 5) - i.quantity;
+                const need = (i.low_stock_threshold || 0) - i.quantity;
                 return `${need > 0 ? need : 1}x ${i.name}`;
             });
             const text = `Need to restock:\n${lines.join('\n')}`;
@@ -202,6 +275,7 @@ function inventoryApp() {
         transferLocation: '',
 
         async init() {
+            document.addEventListener('pullrefresh', () => this.loadItems());
             await this.loadFilters();
             await this.loadItems();
         },
@@ -495,7 +569,7 @@ function itemFormApp() {
             serial_number: '',
             estimated_value: '',
             dropbox_manual_url: '',
-            low_stock_threshold: 5
+            low_stock_threshold: 0
         },
         containers: [],
         locations: [],
@@ -579,7 +653,7 @@ function itemFormApp() {
                         serial_number: item.serial_number || '',
                         estimated_value: item.estimated_value || '',
                         dropbox_manual_url: item.dropbox_manual_url || '',
-                        low_stock_threshold: item.low_stock_threshold || 5
+                        low_stock_threshold: item.low_stock_threshold ?? 0
                     };
                     this.imagePreview = item.image_url;
 
