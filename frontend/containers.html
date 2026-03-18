@@ -186,9 +186,10 @@
                                         <span x-text="box.item_count"></span> items
                                     </span>
                                     <a :href="'/box/' + box.id" @click.stop
-                                       class="hidden sm:inline-flex items-center gap-1.5 text-xs text-primary hover:underline font-medium">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
-                                        View QR
+                                       class="inline-flex items-center gap-1.5 text-xs text-primary hover:underline font-medium p-1.5 -m-1.5 rounded-lg hover:bg-primary/10 transition-colors"
+                                       title="View QR Code">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/><rect x="14" y="14" width="4" height="4"/><line x1="22" y1="14" x2="22" y2="14.01"/><line x1="18" y1="22" x2="18" y2="22.01"/><line x1="22" y1="18" x2="22" y2="22"/></svg>
+                                        <span class="hidden sm:inline">View QR</span>
                                     </a>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                                          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -202,15 +203,6 @@
                             <!-- Accordion Body -->
                             <div x-show="isBoxOpen(box.id)" x-collapse>
                                 <div class="border-t border-border">
-                                    <!-- Mobile QR link -->
-                                    <div class="sm:hidden px-5 py-3 border-b border-border">
-                                        <a :href="'/box/' + box.id"
-                                           class="inline-flex items-center gap-1.5 text-sm text-primary hover:underline font-medium">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
-                                            View QR Code
-                                        </a>
-                                    </div>
-
                                     <!-- No items -->
                                     <div x-show="!box.items || box.items.length === 0" class="px-5 py-8 text-center text-sm text-muted-foreground">
                                         No items in this container. <a href="/item-form.html" class="text-primary hover:underline">Add one</a>.
