@@ -222,7 +222,7 @@
                         <!-- Mobile Recent Items List -->
                         <div class="md:hidden divide-y divide-border">
                             <template x-for="item in recentItems" :key="item.id">
-                                <div class="flex items-center justify-between px-4 py-3">
+                                <a :href="'/item-form.html?id=' + item.id" class="flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors">
                                     <div class="flex-1 min-w-0 mr-3">
                                         <p class="text-sm font-medium text-foreground truncate" x-text="item.name"></p>
                                         <p class="text-xs text-muted-foreground" x-text="item.category"></p>
@@ -230,7 +230,7 @@
                                     <span class="px-2 py-0.5 text-xs font-semibold rounded-full shrink-0"
                                           :class="(item.low_stock_threshold > 0 && item.quantity < item.low_stock_threshold) ? 'bg-destructive/20 text-destructive' : 'bg-secondary/20 text-secondary'"
                                           x-text="item.quantity"></span>
-                                </div>
+                                </a>
                             </template>
                             <div x-show="recentItems.length === 0" class="px-4 py-8 text-center text-muted-foreground text-sm">
                                 No items yet. <a href="/item-form.html" class="text-primary hover:underline">Add your first item</a>.
@@ -250,7 +250,7 @@
                                 </thead>
                                 <tbody class="divide-y divide-border">
                                     <template x-for="item in recentItems" :key="item.id">
-                                        <tr class="hover:bg-muted/50 transition-colors">
+                                        <tr class="hover:bg-muted/50 transition-colors cursor-pointer" @click="window.location.href='/item-form.html?id=' + item.id">
                                             <td class="px-5 py-3">
                                                 <div class="text-sm font-medium text-foreground" x-text="item.name"></div>
                                             </td>
@@ -290,7 +290,7 @@
                         </div>
                         <div x-show="lowStockItems.length > 0" class="divide-y divide-border">
                             <template x-for="item in lowStockItems" :key="item.id">
-                                <div class="flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors">
+                                <a :href="'/item-form.html?id=' + item.id" class="flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors">
                                     <div class="flex-1 min-w-0 mr-3">
                                         <p class="text-sm font-medium text-foreground truncate" x-text="item.name"></p>
                                         <p class="text-xs text-muted-foreground" x-text="item.boxes?.name || 'Unknown container'"></p>
@@ -299,9 +299,9 @@
                                         <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-destructive/20 text-destructive">
                                             <span x-text="item.quantity"></span>/<span x-text="item.low_stock_threshold || 0"></span>
                                         </span>
-                                        <a :href="'/item-form.html?id=' + item.id" class="text-xs text-primary hover:underline whitespace-nowrap">Restock</a>
+                                        <span class="text-xs text-primary whitespace-nowrap">Restock</span>
                                     </div>
-                                </div>
+                                </a>
                             </template>
                         </div>
                     </div>

@@ -26,6 +26,8 @@ CREATE TABLE items (
     serial_number VARCHAR(100),
     estimated_value DECIMAL(10,2),
     low_stock_threshold INTEGER DEFAULT 0,
+    bought_on DATE,
+    bought_from VARCHAR(255),
     updated_at TIMESTAMP DEFAULT NOW(),
     created_at TIMESTAMP DEFAULT NOW(),
     UNIQUE (name, box_id) -- Composite unique constraint for merge strategy

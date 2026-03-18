@@ -273,6 +273,7 @@ function inventoryApp() {
         transferSearch: '',
         transferContainer: '',
         transferLocation: '',
+        transferLocationSearch: '',
 
         async init() {
             document.addEventListener('pullrefresh', () => this.loadItems());
@@ -376,7 +377,19 @@ function inventoryApp() {
             this.transferSearch = '';
             this.transferContainer = '';
             this.transferLocation = '';
+            this.transferLocationSearch = '';
             this.transferOpen = true;
+        },
+
+        get filteredTransferLocations() {
+            const locs = this.filters.locations || [];
+            if (!this.transferLocationSearch) return locs;
+            return locs.filter(l => l.toLowerCase().includes(this.transferLocationSearch.toLowerCase()));
+        },
+
+        selectTransferLocation(loc) {
+            this.transferLocation = loc;
+            this.transferLocationSearch = loc;
         },
 
         get filteredTransferContainers() {
@@ -569,11 +582,14 @@ function itemFormApp() {
             serial_number: '',
             estimated_value: '',
             dropbox_manual_url: '',
-            low_stock_threshold: 0
+            low_stock_threshold: 0,
+            bought_on: '',
+            bought_from: ''
         },
         containers: [],
         locations: [],
         categories: [],
+        stores: [],
         imageFile: null,
         imagePreview: null,
         uploading: false,
@@ -584,7 +600,8 @@ function itemFormApp() {
         comboboxState: {
             location: { open: false, search: '' },
             container_name: { open: false, search: '' },
-            category: { open: false, search: '' }
+            category: { open: false, search: '' },
+            bought_from: { open: false, search: '' }
         },
 
         filteredLocations() {
@@ -603,6 +620,12 @@ function itemFormApp() {
             const search = this.comboboxState.category.search.toLowerCase();
             if (!search) return this.categories;
             return this.categories.filter(cat => cat.toLowerCase().includes(search));
+        },
+
+        filteredStores() {
+            const search = this.comboboxState.bought_from.search.toLowerCase();
+            if (!search) return this.stores;
+            return this.stores.filter(s => s.toLowerCase().includes(search));
         },
 
         selectOption(field, value) {
@@ -653,13 +676,16 @@ function itemFormApp() {
                         serial_number: item.serial_number || '',
                         estimated_value: item.estimated_value || '',
                         dropbox_manual_url: item.dropbox_manual_url || '',
-                        low_stock_threshold: item.low_stock_threshold ?? 0
+                        low_stock_threshold: item.low_stock_threshold ?? 0,
+                        bought_on: item.bought_on || '',
+                        bought_from: item.bought_from || ''
                     };
                     this.imagePreview = item.image_url;
 
                     this.comboboxState.location.search = this.item.location;
                     this.comboboxState.container_name.search = this.item.container_name;
                     this.comboboxState.category.search = this.item.category;
+                    this.comboboxState.bought_from.search = this.item.bought_from;
                 }
             } catch (error) {
                 showToast('Failed to load item: ' + error.message, 'error');
@@ -674,6 +700,7 @@ function itemFormApp() {
                     this.containers = data.data.containers || [];
                     this.locations = data.data.locations || [];
                     this.categories = data.data.categories || [];
+                    this.stores = data.data.stores || [];
                 }
             } catch (error) {
                 console.error('Failed to load filters:', error);

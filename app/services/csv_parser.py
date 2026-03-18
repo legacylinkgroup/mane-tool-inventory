@@ -29,7 +29,9 @@ class CSVParser:
         'Estimated Value',
         'Dropbox URL',
         'Image URL',
-        'Low Stock Threshold'
+        'Low Stock Threshold',
+        'Bought On',
+        'Bought From'
     ]
 
     def __init__(self):
@@ -215,6 +217,21 @@ class CSVParser:
                     parsed['low_stock_threshold'] = threshold
             except ValueError:
                 self.warnings.append(f"Row {row_num}: Invalid threshold '{threshold_str}' ignored, using default")
+
+        # Bought On (date)
+        bought_on = row.get('Bought On', '').strip()
+        if bought_on:
+            from datetime import datetime as dt
+            try:
+                dt.strptime(bought_on, '%Y-%m-%d')
+                parsed['bought_on'] = bought_on
+            except ValueError:
+                self.warnings.append(f"Row {row_num}: Invalid date '{bought_on}' ignored (use YYYY-MM-DD)")
+
+        # Bought From (store name)
+        bought_from = row.get('Bought From', '').strip()
+        if bought_from:
+            parsed['bought_from'] = bought_from
 
     def get_merge_key(self, item_data: Dict) -> Tuple[str, str]:
         """

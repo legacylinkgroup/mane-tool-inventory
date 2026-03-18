@@ -267,6 +267,10 @@
                                     <td class="px-5 py-3">
                                         <div class="flex items-center gap-2">
                                             <a :href="'/item-form.html?id=' + item.id" class="text-sm text-primary hover:underline">Edit</a>
+                                            <a x-show="item.dropbox_manual_url" :href="item.dropbox_manual_url" target="_blank" rel="noopener" @click.stop
+                                               class="p-1 text-muted-foreground hover:text-primary" title="View Manual">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                                            </a>
                                             <button @click="openTransfer(item)" class="p-1 text-muted-foreground hover:text-primary" title="Move to another container">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9V5c0-1.1.9-2 2-2h3.93a2 2 0 0 1 1.66.9l.82 1.2a2 2 0 0 0 1.66.9H20a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-1"/><path d="M2 13h10"/><path d="m9 16 3-3-3-3"/></svg>
                                             </button>
@@ -321,6 +325,10 @@
                                             class="flex-1 text-center py-2 text-sm font-medium text-destructive bg-destructive/10 rounded-lg">
                                         Delete
                                     </button>
+                                    <a x-show="item.dropbox_manual_url" :href="item.dropbox_manual_url" target="_blank" rel="noopener" @click.stop
+                                       class="flex-1 text-center py-2 text-sm font-medium text-foreground bg-muted rounded-lg">
+                                        Manual
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -361,11 +369,19 @@
                         <h3 class="text-lg font-bold text-foreground mb-1">Move Item</h3>
                         <p class="text-sm text-muted-foreground mb-4">Move "<span x-text="transferItem?.name"></span>" to a different container.</p>
                         <div class="space-y-3 mb-4">
-                            <div>
+                            <div class="relative" @click.outside="transferLocationSearch = transferLocationSearch">
                                 <label class="block text-sm font-medium text-foreground mb-1">Location</label>
-                                <input type="text" x-model="transferLocation"
+                                <input type="text" x-model="transferLocationSearch"
+                                       @input="transferLocation = transferLocationSearch"
                                        placeholder="e.g., Truck 1, Shop"
                                        class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:ring-2 focus:ring-ring">
+                                <div x-show="transferLocationSearch && filteredTransferLocations.length > 0"
+                                     class="absolute z-50 mt-1 w-full max-h-36 overflow-y-auto bg-popover border border-border rounded-lg shadow-lg">
+                                    <template x-for="loc in filteredTransferLocations" :key="loc">
+                                        <button type="button" @click="selectTransferLocation(loc)"
+                                                class="w-full text-left px-3 py-2 text-sm hover:bg-primary hover:text-primary-foreground" x-text="loc"></button>
+                                    </template>
+                                </div>
                             </div>
                             <div class="relative">
                                 <label class="block text-sm font-medium text-foreground mb-1">Container</label>

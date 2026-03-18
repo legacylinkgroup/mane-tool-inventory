@@ -42,6 +42,8 @@ async def export_inventory(db: Client = Depends(get_supabase_client)):
             'Estimated Value',
             'Dropbox URL',
             'Image URL',
+            'Bought On',
+            'Bought From',
             'Last Updated'
         ])
 
@@ -60,6 +62,8 @@ async def export_inventory(db: Client = Depends(get_supabase_client)):
                 item.get('estimated_value', ''),
                 item.get('dropbox_manual_url', ''),
                 item.get('image_url', ''),
+                item.get('bought_on', ''),
+                item.get('bought_from', ''),
                 item.get('updated_at', '')
             ])
 

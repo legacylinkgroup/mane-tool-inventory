@@ -26,6 +26,8 @@ class ItemCreateRequest(BaseModel):
     serial_number: Optional[str] = Field(None, max_length=100)
     estimated_value: Optional[Decimal] = Field(None, ge=0)
     low_stock_threshold: int = Field(default=0, ge=0)
+    bought_on: Optional[str] = None
+    bought_from: Optional[str] = Field(None, max_length=255)
 
 
 @router.get("/items", summary="Search and filter items")
@@ -121,12 +123,20 @@ async def get_filters(db: Client = Depends(get_supabase_client)):
             if item.get('category')
         ))
 
+        # Get unique stores (bought_from) from items table
+        stores_result = db.table('items').select('bought_from').execute()
+        stores = sorted(set(
+            item['bought_from'] for item in (stores_result.data or [])
+            if item.get('bought_from')
+        ))
+
         return {
             "success": True,
             "data": {
                 "locations": locations,
                 "containers": containers,
-                "categories": categories
+                "categories": categories,
+                "stores": stores
             }
         }
 
@@ -148,7 +158,8 @@ async def get_item(
             raise HTTPException(status_code=404, detail="Item not found")
 
         item = result.data[0]
-        item['low_stock'] = item['quantity'] <= item.get('low_stock_threshold', 5)
+        threshold = item.get('low_stock_threshold', 0)
+        item['low_stock'] = threshold > 0 and item['quantity'] < threshold
 
         return jsonable_encoder({
             "success": True,
@@ -188,6 +199,8 @@ async def create_item(
             'serial_number': item.serial_number,
             'estimated_value': float(item.estimated_value) if item.estimated_value else None,
             'low_stock_threshold': item.low_stock_threshold,
+            'bought_on': item.bought_on,
+            'bought_from': item.bought_from,
         }
 
         result = db.table('items').insert(item_data).execute()

@@ -130,7 +130,9 @@ class UploadService:
                 'estimated_value': float(row['estimated_value']) if row.get('estimated_value') else None,
                 'dropbox_manual_url': row.get('dropbox_manual_url'),
                 'image_url': row.get('image_url'),
-                'low_stock_threshold': row.get('low_stock_threshold', 0)
+                'low_stock_threshold': row.get('low_stock_threshold', 0),
+                'bought_on': row.get('bought_on'),
+                'bought_from': row.get('bought_from'),
             }
 
             # Check if item exists (composite key: name + box_id)
